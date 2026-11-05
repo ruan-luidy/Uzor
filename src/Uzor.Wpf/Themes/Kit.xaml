@@ -189,6 +189,8 @@
   <SolidColorBrush x:Key="Info.TextBrush" Color="#3BC9DB" />
   <SolidColorBrush x:Key="Warning.TextBrush" Color="#E9AF20" />
   <SolidColorBrush x:Key="Danger.TextBrush" Color="#E5525E" />
+  <!--  O cinza apagado do texto de apoio (rótulo de cartão, legenda): o ThemeService troca por tema  -->
+  <SolidColorBrush x:Key="MutedTextBrush" Color="#85858C" />
   <!--  O laranja do Negativo (atraso, hora extra): no claro, um tom mais fechado pra não sumir no branco  -->
   <SolidColorBrush x:Key="Orange.TextBrush" Color="#FF8A5C" />
 
