@@ -77,11 +77,12 @@
                     <RowDefinition Height="Auto" />
                   </Grid.RowDefinitions>
 
-                  <!--  Título: ícone, título e subtítulo; o X no canto  -->
+                  <!--  Título: ícone, título e subtítulo; o que o diálogo põe no cabeçalho; o X no canto  -->
                   <Grid Margin="24,20,14,0">
                     <Grid.ColumnDefinitions>
                       <ColumnDefinition Width="Auto" />
                       <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="Auto" />
                       <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <Border
@@ -119,9 +120,14 @@
                         </ContentPresenter.Resources>
                       </ContentPresenter>
                     </StackPanel>
+                    <ContentPresenter
+                      Grid.Column="2"
+                      Margin="12,0,0,0"
+                      VerticalAlignment="Center"
+                      Content="{TemplateBinding HeaderContent}" />
                     <Button
                       x:Name="PART_Close"
-                      Grid.Column="2"
+                      Grid.Column="3"
                       Margin="12,-6,0,0"
                       VerticalAlignment="Top"
                       hc:IconElement.Geometry="{icons:Phosphor XBold}"

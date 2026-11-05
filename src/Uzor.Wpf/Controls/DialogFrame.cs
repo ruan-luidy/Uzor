@@ -44,6 +44,19 @@ namespace Uzor.Wpf.Controls
       set => SetValue(SubtitleProperty, value);
     }
 
+    public static readonly DependencyProperty HeaderContentProperty =
+      DependencyProperty.Register(nameof(HeaderContent), typeof(object), typeof(DialogFrame), new PropertyMetadata(null));
+
+    /// <summary>
+    /// O que mora no cabeçalho à direita do título, antes do X: um filtro, um botão de ação, uma contagem (veio do
+    /// Negativo, que usa em três diálogos). Nulo = nada.
+    /// </summary>
+    public object? HeaderContent
+    {
+      get => GetValue(HeaderContentProperty);
+      set => SetValue(HeaderContentProperty, value);
+    }
+
     public static readonly DependencyProperty FooterProperty =
       DependencyProperty.Register(nameof(Footer), typeof(object), typeof(DialogFrame), new PropertyMetadata(null));
 
