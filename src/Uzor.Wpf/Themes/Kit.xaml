@@ -822,6 +822,33 @@
       </Trigger>
     </Style.Triggers>
   </Style>
+  <!--
+    Campo de texto COM rótulo em cima (hc:TitleElement.Title): o modelo do HandyControl com as cores do de senha acima,
+    pra usuário e senha saírem iguais no mesmo formulário - com o hc:TextBox padrão do lado, um era escuro com borda e o
+    outro translúcido (o login do Negativo, 05/11/2026). Por chave, como o Field: implícito trocava o miolo do seletor
+    de data.
+  -->
+  <Style
+    x:Key="FieldTitled"
+    BasedOn="{StaticResource {x:Type hc:TextBox}}"
+    TargetType="hc:TextBox">
+    <Style.Resources>
+      <SolidColorBrush x:Key="ThirdlyTextBrush" Color="#85858C" />
+      <SolidColorBrush x:Key="BorderBrush" Color="#85858C" />
+    </Style.Resources>
+    <Setter Property="CaretBrush" Value="{DynamicResource PrimaryTextBrush}" />
+    <Setter Property="SelectionBrush" Value="{DynamicResource PrimaryBrush}" />
+    <Setter Property="Background" Value="{DynamicResource Button.BackgroundBrush}" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Style.Triggers>
+      <Trigger Property="IsMouseOver" Value="True">
+        <Setter Property="Background" Value="{DynamicResource Button.HoverBrush}" />
+      </Trigger>
+      <Trigger Property="IsKeyboardFocusWithin" Value="True">
+        <Setter Property="Background" Value="{DynamicResource Button.HoverBrush}" />
+      </Trigger>
+    </Style.Triggers>
+  </Style>
   <Style BasedOn="{StaticResource {x:Type PasswordBox}}" TargetType="PasswordBox">
     <Setter Property="CaretBrush" Value="{DynamicResource PrimaryTextBrush}" />
     <Setter Property="SelectionBrush" Value="{DynamicResource PrimaryBrush}" />
