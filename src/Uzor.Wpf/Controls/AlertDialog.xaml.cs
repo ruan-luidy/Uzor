@@ -23,15 +23,36 @@ namespace Uzor.Wpf.Controls
   {
     private readonly string? _details;
 
-    public AlertDialog(DialogKind kind, string title, string message, string primaryText, string? secondaryText = null, string? details = null)
+    private readonly string? _filePath;
+
+    /// <summary>A largura de antes de abrir os detalhes (420, ou 520 com mensagem comprida).</summary>
+    private readonly double _largura;
+
+    /// <param name="filePath">
+    /// O arquivo que a mensagem cita (o que foi exportado ou salvo): aparece o nome dele com o atalho pra pasta, que
+    /// abre o Explorer com ele selecionado. Nulo = sem atalho.
+    /// </param>
+    public AlertDialog(DialogKind kind, string title, string message, string primaryText, string? secondaryText = null, string? details = null,
+      string? filePath = null)
     {
       InitializeComponent();
 
       TitleText.Text = title;
       MessageText.Text = message;
+      // Mensagem de várias linhas (a confirmação com os totais): mais largo, pra linha não quebrar no meio do valor
+      if (message.Length > 160 || message.Count(c => c == '\n') >= 3)
+        Width = 520;
       PrimaryButton.Content = primaryText;
       _details = string.IsNullOrWhiteSpace(details) ? null : details;
       DetailsLink.Visibility = _details is null ? Visibility.Collapsed : Visibility.Visible;
+
+      _filePath = string.IsNullOrWhiteSpace(filePath) ? null : filePath.Trim();
+      if (_filePath is not null)
+      {
+        FileLinkText.Text = $"{System.IO.Path.GetFileName(_filePath)} · {Texts.ShowInFolder}";
+        FileLink.ToolTip = _filePath;
+        FileLink.Visibility = Visibility.Visible;
+      }
 
       if (secondaryText is not null)
       {
@@ -55,6 +76,7 @@ namespace Uzor.Wpf.Controls
       if (kind == DialogKind.Error && secondaryText is not null)
         PrimaryButton.Style = (Style)FindResource("Action.Dialog.Danger");
 
+      _largura = Width;
       Loaded += OnLoaded;
       PreviewKeyDown += OnPreviewKeyDown;
     }
@@ -94,7 +116,25 @@ namespace Uzor.Wpf.Controls
       DetailsText.Text = _details;
       DetailsCard.Visibility = CopyButton.Visibility = open ? Visibility.Visible : Visibility.Collapsed;
       DetailsLinkText.Text = open ? Texts.HideDetails : Texts.ShowDetails;
-      Width = open ? 560 : 420;
+      Width = open ? 560 : _largura;
+    }
+
+    /// <summary>O Explorer com o arquivo selecionado; sem o arquivo, a pasta dele (se existir).</summary>
+    private void FileLink_Click(object sender, RoutedEventArgs e)
+    {
+      if (_filePath is null)
+        return;
+      try
+      {
+        if (System.IO.File.Exists(_filePath))
+          System.Diagnostics.Process.Start("explorer.exe", $"/select,\"{_filePath}\"");
+        else if (System.IO.Path.GetDirectoryName(_filePath) is { } folder && System.IO.Directory.Exists(folder))
+          System.Diagnostics.Process.Start("explorer.exe", $"\"{folder}\"");
+      }
+      catch (System.ComponentModel.Win32Exception)
+      {
+        // Sem Explorer (sessão restrita): o caminho continua no tooltip pra copiar
+      }
     }
 
     private void CopyButton_Click(object sender, RoutedEventArgs e)

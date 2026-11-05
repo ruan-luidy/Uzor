@@ -20,6 +20,8 @@ namespace Uzor.Wpf
 
     public static string CopyDetails { get; set; } = "Copiar detalhes";
 
+    public static string ShowInFolder { get; set; } = "mostrar na pasta";
+
     public static string DetailsCopied { get; set; } = "Detalhes copiados pra área de transferência";
 
     public static string Retry { get; set; } = "Tentar de novo";
