@@ -9,6 +9,9 @@ namespace Uzor.Wpf
     Warning,
     Danger,
     Info,
+    // Os dois de fim de fila: o laranja (OP liberada, hora extra) e o roxo (material solicitado) do Negativo
+    Orange,
+    Purple,
   }
 
   /// <summary>Um texto de status com o tom dele.</summary>

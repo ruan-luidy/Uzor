@@ -193,6 +193,15 @@
   <SolidColorBrush x:Key="MutedTextBrush" Color="#85858C" />
   <!--  O laranja do Negativo (atraso, hora extra): no claro, um tom mais fechado pra não sumir no branco  -->
   <SolidColorBrush x:Key="Orange.TextBrush" Color="#FF8A5C" />
+  <SolidColorBrush x:Key="Purple.TextBrush" Color="#C77DDB" />
+  <SolidColorBrush
+    x:Key="Orange.SoftBrush"
+    Opacity="0.18"
+    Color="#FF6B35" />
+  <SolidColorBrush
+    x:Key="Purple.SoftBrush"
+    Opacity="0.18"
+    Color="#9C27B0" />
 
   <Style TargetType="controls:Chip">
     <Setter Property="Focusable" Value="False" />
@@ -239,6 +248,14 @@
       <Trigger Property="Tone" Value="Info">
         <Setter Property="Background" Value="{DynamicResource Info.SoftBrush}" />
         <Setter Property="Foreground" Value="{DynamicResource Info.TextBrush}" />
+      </Trigger>
+      <Trigger Property="Tone" Value="Orange">
+        <Setter Property="Background" Value="{DynamicResource Orange.SoftBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource Orange.TextBrush}" />
+      </Trigger>
+      <Trigger Property="Tone" Value="Purple">
+        <Setter Property="Background" Value="{DynamicResource Purple.SoftBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource Purple.TextBrush}" />
       </Trigger>
     </Style.Triggers>
   </Style>

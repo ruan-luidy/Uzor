@@ -76,6 +76,7 @@ namespace Uzor.Wpf.Services
       SetBrush("Warning.TextBrush", dark ? Color.FromRgb(0xE9, 0xAF, 0x20) : Color.FromRgb(0x9A, 0x6B, 0x00));
       SetBrush("Danger.TextBrush", dark ? Color.FromRgb(0xE5, 0x52, 0x5E) : Color.FromRgb(0xC2, 0x29, 0x35));
       SetBrush("Orange.TextBrush", dark ? Color.FromRgb(0xFF, 0x8A, 0x5C) : Color.FromRgb(0xC2, 0x4A, 0x10));
+      SetBrush("Purple.TextBrush", dark ? Color.FromRgb(0xC7, 0x7D, 0xDB) : Color.FromRgb(0x7B, 0x2A, 0x92));
       Changed?.Invoke(null, EventArgs.Empty);
     }
 
