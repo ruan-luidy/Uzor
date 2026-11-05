@@ -1,0 +1,87 @@
+<UserControl
+  x:Class="Uzor.Wpf.Controls.LoadingDots"
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  x:Name="Self"
+  VerticalAlignment="Center"
+  Foreground="{DynamicResource SecondaryTextBrush}"
+  IsHitTestVisible="False">
+
+  <!--
+    Três bolinhas acendendo em sequência (o "digitando" de chat), no lugar do "..." parado enquanto algo carrega,
+    como o ping. Cada uma sobe um pouco e clareia; a onda leva 900 ms e repete.
+  -->
+  <UserControl.Resources>
+    <Storyboard x:Key="Wave" RepeatBehavior="Forever">
+      <DoubleAnimationUsingKeyFrames Storyboard.TargetName="D1" Storyboard.TargetProperty="Opacity">
+        <EasingDoubleKeyFrame KeyTime="0:0:0" Value="0.3" />
+        <EasingDoubleKeyFrame KeyTime="0:0:0.15" Value="1" />
+        <EasingDoubleKeyFrame KeyTime="0:0:0.3" Value="0.3" />
+        <EasingDoubleKeyFrame KeyTime="0:0:0.9" Value="0.3" />
+      </DoubleAnimationUsingKeyFrames>
+      <DoubleAnimationUsingKeyFrames Storyboard.TargetName="D1" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)">
+        <EasingDoubleKeyFrame KeyTime="0:0:0" Value="0" />
+        <EasingDoubleKeyFrame KeyTime="0:0:0.15" Value="-2" />
+        <EasingDoubleKeyFrame KeyTime="0:0:0.3" Value="0" />
+      </DoubleAnimationUsingKeyFrames>
+      <DoubleAnimationUsingKeyFrames Storyboard.TargetName="D2" Storyboard.TargetProperty="Opacity">
+        <EasingDoubleKeyFrame KeyTime="0:0:0" Value="0.3" />
+        <EasingDoubleKeyFrame KeyTime="0:0:0.15" Value="0.3" />
+        <EasingDoubleKeyFrame KeyTime="0:0:0.3" Value="1" />
+        <EasingDoubleKeyFrame KeyTime="0:0:0.45" Value="0.3" />
+        <EasingDoubleKeyFrame KeyTime="0:0:0.9" Value="0.3" />
+      </DoubleAnimationUsingKeyFrames>
+      <DoubleAnimationUsingKeyFrames Storyboard.TargetName="D2" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)">
+        <EasingDoubleKeyFrame KeyTime="0:0:0.15" Value="0" />
+        <EasingDoubleKeyFrame KeyTime="0:0:0.3" Value="-2" />
+        <EasingDoubleKeyFrame KeyTime="0:0:0.45" Value="0" />
+      </DoubleAnimationUsingKeyFrames>
+      <DoubleAnimationUsingKeyFrames Storyboard.TargetName="D3" Storyboard.TargetProperty="Opacity">
+        <EasingDoubleKeyFrame KeyTime="0:0:0" Value="0.3" />
+        <EasingDoubleKeyFrame KeyTime="0:0:0.3" Value="0.3" />
+        <EasingDoubleKeyFrame KeyTime="0:0:0.45" Value="1" />
+        <EasingDoubleKeyFrame KeyTime="0:0:0.6" Value="0.3" />
+        <EasingDoubleKeyFrame KeyTime="0:0:0.9" Value="0.3" />
+      </DoubleAnimationUsingKeyFrames>
+      <DoubleAnimationUsingKeyFrames Storyboard.TargetName="D3" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)">
+        <EasingDoubleKeyFrame KeyTime="0:0:0.3" Value="0" />
+        <EasingDoubleKeyFrame KeyTime="0:0:0.45" Value="-2" />
+        <EasingDoubleKeyFrame KeyTime="0:0:0.6" Value="0" />
+      </DoubleAnimationUsingKeyFrames>
+    </Storyboard>
+  </UserControl.Resources>
+
+  <StackPanel Orientation="Horizontal">
+    <Ellipse
+      x:Name="D1"
+      Width="4"
+      Height="4"
+      Fill="{Binding Foreground, ElementName=Self}"
+      Opacity="0.3">
+      <Ellipse.RenderTransform>
+        <TranslateTransform />
+      </Ellipse.RenderTransform>
+    </Ellipse>
+    <Ellipse
+      x:Name="D2"
+      Width="4"
+      Height="4"
+      Margin="3,0"
+      Fill="{Binding Foreground, ElementName=Self}"
+      Opacity="0.3">
+      <Ellipse.RenderTransform>
+        <TranslateTransform />
+      </Ellipse.RenderTransform>
+    </Ellipse>
+    <Ellipse
+      x:Name="D3"
+      Width="4"
+      Height="4"
+      Fill="{Binding Foreground, ElementName=Self}"
+      Opacity="0.3">
+      <Ellipse.RenderTransform>
+        <TranslateTransform />
+      </Ellipse.RenderTransform>
+    </Ellipse>
+  </StackPanel>
+</UserControl>

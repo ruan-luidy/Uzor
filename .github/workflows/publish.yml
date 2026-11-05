@@ -1,0 +1,25 @@
+name: publish
+
+# Tag vX.Y.Z no main: empacota a Uzor.Wpf com essa versão e publica no GitHub Packages
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  publish:
+    runs-on: windows-latest
+    permissions:
+      contents: read
+      packages: write
+    env:
+      CI: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Versão da tag
+        shell: pwsh
+        run: echo "VERSION=$('${{ github.ref_name }}'.TrimStart('v'))" >> $env:GITHUB_ENV
+      - run: dotnet pack src/Uzor.Wpf/Uzor.Wpf.csproj -c Release -p:Version=${{ env.VERSION }} -o artifacts
+      - run: dotnet nuget push "artifacts/*.nupkg" --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate

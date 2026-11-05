@@ -1,0 +1,85 @@
+<UserControl
+  x:Class="Uzor.Gallery.Pages.CardsPage"
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:controls="clr-namespace:Uzor.Wpf.Controls;assembly=Uzor.Wpf"
+  xmlns:hc="https://handyorg.github.io/handycontrol"
+  xmlns:icons="clr-namespace:Uzor.Wpf.Icons;assembly=Uzor.Wpf"
+  xmlns:uzor="clr-namespace:Uzor.Wpf;assembly=Uzor.Wpf">
+
+  <Grid Margin="16">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+    </Grid.RowDefinitions>
+    <controls:PageHeader Title="Cartões e estados" Subtitle="Cartão de informação, linhas de configuração, estado vazio, erro e carregando." />
+    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+      <StackPanel Margin="0,0,8,16">
+        <TextBlock Style="{StaticResource GallerySection}" Text="CARTÃO DE INFORMAÇÃO" />
+        <Border Style="{StaticResource InfoCard}">
+          <StackPanel>
+            <DockPanel Style="{StaticResource InfoRow}">
+              <TextBlock Style="{StaticResource InfoLabel}" Text="Fornecedor" />
+              <TextBlock Style="{StaticResource InfoValue}" Text="Usinagem Alfa Ltda" />
+            </DockPanel>
+            <Border Style="{StaticResource InfoDivider}" />
+            <DockPanel Style="{StaticResource InfoRow}">
+              <TextBlock Style="{StaticResource InfoLabel}" Text="Preço" />
+              <TextBlock FontFamily="{StaticResource FontFamily.Numbers}" Style="{StaticResource InfoValue}" Text="R$ 845,00/un" />
+            </DockPanel>
+            <Border Style="{StaticResource InfoDivider}" />
+            <DockPanel Style="{StaticResource InfoRow}">
+              <TextBlock Style="{StaticResource InfoLabel}" Text="Prazo" />
+              <TextBlock Style="{StaticResource InfoValue}" Text="31/10/2026" />
+            </DockPanel>
+          </StackPanel>
+        </Border>
+
+        <TextBlock Style="{StaticResource GallerySection}" Text="LINHAS DE CONFIGURAÇÃO" />
+        <Border Style="{StaticResource SettingGroup}">
+          <StackPanel>
+            <Border Style="{StaticResource SettingRow}">
+              <DockPanel>
+                <ToggleButton Margin="12,0,0,0" VerticalAlignment="Center" DockPanel.Dock="Right" IsChecked="True" Style="{StaticResource Switch}" />
+                <StackPanel>
+                  <TextBlock Style="{StaticResource SettingTitle}" Text="Avisar por e-mail" />
+                  <TextBlock Style="{StaticResource SettingCaption}" Text="O fornecedor recebe o aviso quando o pacote abre." />
+                </StackPanel>
+              </DockPanel>
+            </Border>
+            <Border Style="{StaticResource InfoDivider}" />
+            <Border Style="{StaticResource SettingRow}">
+              <DockPanel>
+                <Button Margin="12,0,0,0" VerticalAlignment="Center" hc:IconElement.Geometry="{icons:Phosphor FolderPlusBold}" Content="Adicionar pasta" DockPanel.Dock="Right" Style="{StaticResource Action}" />
+                <StackPanel>
+                  <TextBlock Style="{StaticResource SettingTitle}" Text="Pastas de desenho" />
+                  <TextBlock Style="{StaticResource SettingCaption}" Text="Onde o app procura os arquivos." />
+                </StackPanel>
+              </DockPanel>
+            </Border>
+          </StackPanel>
+        </Border>
+
+        <TextBlock Style="{StaticResource GallerySection}" Text="ESTADOS" />
+        <UniformGrid Columns="2">
+          <Border Height="220" Margin="0,0,8,0" Style="{StaticResource GalleryCard}">
+            <controls:EmptyState Icon="{icons:Phosphor TrayBold}" Text="Quando entrar alguma coisa, ela aparece aqui." Title="Nada por aqui ainda" />
+          </Border>
+          <Border Height="220" Margin="8,0,0,0" Style="{StaticResource GalleryCard}">
+            <Grid>
+              <controls:ErrorState Detail="O servidor não respondeu em 30 segundos." Text="Não deu pra carregar" />
+            </Grid>
+          </Border>
+        </UniformGrid>
+        <Border Margin="0,8,0,0" Style="{StaticResource GalleryCard}">
+          <StackPanel Orientation="Horizontal">
+            <controls:LoadingDots VerticalAlignment="Center" />
+            <TextBlock Margin="12,0,24,0" VerticalAlignment="Center" Style="{StaticResource CaptionText}" Text="LoadingDots" />
+            <controls:LiveDot VerticalAlignment="Center" />
+            <TextBlock Margin="12,0,0,0" VerticalAlignment="Center" Style="{StaticResource CaptionText}" Text="LiveDot" />
+          </StackPanel>
+        </Border>
+      </StackPanel>
+    </ScrollViewer>
+  </Grid>
+</UserControl>

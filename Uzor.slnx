@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Uzor.Wpf/Uzor.Wpf.csproj" />
+  </Folder>
+  <Folder Name="/samples/">
+    <Project Path="samples/Uzor.Gallery/Uzor.Gallery.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,163 @@
+<UserControl
+  x:Class="Uzor.Wpf.Controls.FormDialog"
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:uzor="clr-namespace:Uzor.Wpf"
+  xmlns:controls="clr-namespace:Uzor.Wpf.Controls"
+  xmlns:hc="https://handyorg.github.io/handycontrol"
+  xmlns:icons="clr-namespace:Uzor.Wpf.Icons"
+  x:Name="Root"
+  Width="460"
+  Background="Transparent">
+
+  <!--
+    Diálogo de formulário genérico: um recado opcional em cima, os campos (texto, texto longo ou data e hora) com o
+    erro de cada um embaixo, e o erro do servidor no fim. Validação local primeiro (tremida no campo), depois quem
+    abriu grava; se a API recusar, o recado dela aparece aqui e o diálogo continua aberto.
+  -->
+  <controls:DialogFrame x:Name="Frame" CloseClick="Cancel_Click">
+    <StackPanel>
+      <!--  O recado de cima: na faixa azul suave, com o "i" do lado  -->
+      <Border
+        x:Name="MessageCard"
+        Margin="0,0,0,18"
+        Style="{StaticResource InfoBanner}">
+        <DockPanel>
+          <Path
+            x:Name="MessageIcon"
+            Width="14"
+            Height="14"
+            Margin="0,2,10,0"
+            VerticalAlignment="Top"
+            Data="{icons:Phosphor InfoBold}"
+            Fill="{DynamicResource Accent.TextBrush}"
+            Stretch="Uniform" />
+          <TextBlock
+            x:Name="MessageText"
+            FontSize="{StaticResource FontSize.Sm}"
+            LineHeight="17"
+            TextWrapping="Wrap" />
+        </DockPanel>
+      </Border>
+
+      <!--  O 16 embaixo de cada campo separa um do outro; o do último sai pela margem negativa  -->
+      <ItemsControl
+        x:Name="FieldsList"
+        Margin="0,0,0,-16"
+        Focusable="False"
+        IsTabStop="False">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate DataType="{x:Type controls:FormField}">
+            <StackPanel Margin="0,0,0,16">
+              <TextBlock Style="{StaticResource DialogFieldLabel}" Text="{Binding Label}" />
+              <hc:TextBox
+                x:Name="Box"
+                hc:InfoElement.Placeholder="{Binding Placeholder}"
+                MaxLength="{Binding MaxLength}"
+                Style="{StaticResource Field}"
+                Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                Visibility="{Binding IsText, Converter={StaticResource Boolean2VisibilityConverter}}" />
+              <controls:DateTimeField SelectedDateTime="{Binding Date}" Visibility="{Binding IsDate, Converter={StaticResource Boolean2VisibilityConverter}}" />
+              <controls:SelectField
+                ItemsSource="{Binding Options}"
+                SelectedItem="{Binding Value}"
+                Visibility="{Binding IsChoice, Converter={StaticResource Boolean2VisibilityConverter}}" />
+              <!--  Senha: o PasswordBox não tem binding; o handler copia pro campo a cada tecla  -->
+              <PasswordBox
+                PasswordChanged="Password_Changed"
+                Visibility="{Binding IsPassword, Converter={StaticResource Boolean2VisibilityConverter}}" />
+              <!--  Embaixo do campo: a ajuda, trocada pelo erro quando tem; sem nenhum dos dois, não ocupa lugar  -->
+              <Grid x:Name="Below" Margin="0,5,0,0">
+                <TextBlock
+                  x:Name="HintText"
+                  Style="{StaticResource CaptionText}"
+                  Text="{Binding Hint}"
+                  TextTrimming="None"
+                  TextWrapping="Wrap" />
+                <StackPanel
+                  x:Name="ErrorLine"
+                  Orientation="Horizontal"
+                  Visibility="Collapsed">
+                  <Path
+                    Width="12"
+                    Height="12"
+                    Margin="0,0,6,0"
+                    VerticalAlignment="Center"
+                    Data="{icons:Phosphor WarningCircleBold}"
+                    Fill="{DynamicResource Danger.TextBrush}"
+                    Stretch="Uniform" />
+                  <TextBlock
+                    FontSize="{StaticResource FontSize.Sm}"
+                    Foreground="{DynamicResource Danger.TextBrush}"
+                    Text="{Binding Error}"
+                    TextWrapping="Wrap" />
+                </StackPanel>
+              </Grid>
+            </StackPanel>
+            <DataTemplate.Triggers>
+              <DataTrigger Binding="{Binding IsMultiline}" Value="True">
+                <Setter TargetName="Box" Property="AcceptsReturn" Value="True" />
+                <Setter TargetName="Box" Property="TextWrapping" Value="Wrap" />
+                <Setter TargetName="Box" Property="Height" Value="96" />
+                <Setter TargetName="Box" Property="VerticalContentAlignment" Value="Top" />
+                <Setter TargetName="Box" Property="VerticalScrollBarVisibility" Value="Auto" />
+              </DataTrigger>
+              <DataTrigger Binding="{Binding Monospace}" Value="True">
+                <Setter TargetName="Box" Property="FontFamily" Value="{StaticResource FontFamily.Numbers}" />
+              </DataTrigger>
+              <DataTrigger Binding="{Binding Hint}" Value="{x:Null}">
+                <Setter TargetName="Below" Property="Visibility" Value="Collapsed" />
+              </DataTrigger>
+              <DataTrigger Binding="{Binding Error, Converter={StaticResource Object2BooleanConverter}}" Value="True">
+                <Setter TargetName="HintText" Property="Visibility" Value="Hidden" />
+                <Setter TargetName="ErrorLine" Property="Visibility" Value="Visible" />
+                <Setter TargetName="Below" Property="Visibility" Value="Visible" />
+              </DataTrigger>
+            </DataTemplate.Triggers>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+
+      <!--  A recusa da API: faixa vermelha suave embaixo dos campos  -->
+      <Border
+        x:Name="ServerError"
+        Margin="0,14,0,0"
+        Padding="12,8"
+        Background="{DynamicResource Danger.SoftBrush}"
+        CornerRadius="{StaticResource Radius.Md}"
+        Visibility="Collapsed">
+        <DockPanel>
+          <Path
+            Width="14"
+            Height="14"
+            Margin="0,1,10,0"
+            VerticalAlignment="Top"
+            Data="{icons:Phosphor WarningCircleBold}"
+            Fill="{DynamicResource Danger.TextBrush}"
+            Stretch="Uniform" />
+          <TextBlock
+            x:Name="ServerErrorText"
+            FontSize="{StaticResource FontSize.Sm}"
+            Foreground="{DynamicResource PrimaryTextBrush}"
+            TextWrapping="Wrap" />
+        </DockPanel>
+      </Border>
+    </StackPanel>
+
+    <controls:DialogFrame.Footer>
+      <hc:UniformSpacingPanel Style="{StaticResource DialogActions}">
+        <Button
+          x:Name="CancelButton"
+          Click="Cancel_Click"
+          Content="{x:Static uzor:Texts.Cancel}"
+          IsCancel="True"
+          Style="{StaticResource Action.Dialog}" />
+        <Button
+          x:Name="ConfirmButton"
+          Click="Confirm_Click"
+          IsDefault="True"
+          Style="{StaticResource Action.Dialog.Primary}" />
+      </hc:UniformSpacingPanel>
+    </controls:DialogFrame.Footer>
+  </controls:DialogFrame>
+</UserControl>

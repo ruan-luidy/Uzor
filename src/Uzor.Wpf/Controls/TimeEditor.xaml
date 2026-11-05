@@ -1,0 +1,116 @@
+<UserControl
+  x:Class="Uzor.Wpf.Controls.TimeEditor"
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:uzor="clr-namespace:Uzor.Wpf"
+  xmlns:icons="clr-namespace:Uzor.Wpf.Icons"
+  Height="{StaticResource Control.Height}"
+  FocusVisualStyle="{x:Null}"
+  Focusable="True"
+  IsTabStop="True">
+
+  <!--
+    Horário em duas partes, hora e minuto, como o relógio do Windows: clica numa (ela fica azul), digita e ele já
+    pula pra próxima; setas, rodinha e as setinhas do lado sobem e descem; nunca precisa apagar nem selecionar.
+  -->
+  <UserControl.Resources>
+    <Style x:Key="Segment" TargetType="Border">
+      <Setter Property="Padding" Value="4,1" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="CornerRadius" Value="3" />
+      <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    <Style x:Key="SegmentText" TargetType="TextBlock">
+      <Setter Property="FontFamily" Value="{StaticResource FontFamily.Numbers}" />
+      <Setter Property="FontSize" Value="{StaticResource FontSize.Body}" />
+      <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+    </Style>
+
+    <!--  As setinhas de subir e descer: seguram e repetem; não roubam o foco da parte marcada  -->
+    <Style x:Key="Arrow" TargetType="RepeatButton">
+      <Setter Property="Width" Value="18" />
+      <Setter Property="Height" Value="12" />
+      <Setter Property="Focusable" Value="False" />
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Delay" Value="350" />
+      <Setter Property="Interval" Value="90" />
+      <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="RepeatButton">
+            <Border
+              x:Name="Bg"
+              Background="Transparent"
+              CornerRadius="3">
+              <Path
+                Width="8"
+                Height="8"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Data="{TemplateBinding Tag}"
+                Fill="{TemplateBinding Foreground}"
+                Stretch="Uniform" />
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="Bg" Property="Background" Value="{DynamicResource Button.HoverBrush}" />
+                <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+              </Trigger>
+              <Trigger Property="IsPressed" Value="True">
+                <Setter TargetName="Bg" Property="Background" Value="{DynamicResource Button.PressedBrush}" />
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+  </UserControl.Resources>
+
+  <Border
+    x:Name="Box"
+    Padding="4,0,2,0"
+    Background="{DynamicResource Button.BackgroundBrush}"
+    CornerRadius="{StaticResource Radius.Sm}"
+    MouseLeftButtonDown="Box_MouseLeftButtonDown">
+    <DockPanel>
+      <StackPanel
+        Margin="2,0,0,0"
+        VerticalAlignment="Center"
+        DockPanel.Dock="Right">
+        <RepeatButton
+          Click="Up_Click"
+          Style="{StaticResource Arrow}"
+          Tag="{icons:Phosphor CaretUpBold}"
+          ToolTip="{x:Static uzor:Texts.TimeUp}" />
+        <RepeatButton
+          Click="Down_Click"
+          Style="{StaticResource Arrow}"
+          Tag="{icons:Phosphor CaretDownBold}"
+          ToolTip="{x:Static uzor:Texts.TimeDown}" />
+      </StackPanel>
+      <StackPanel
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+        Orientation="Horizontal">
+        <Border
+          x:Name="HourPart"
+          MouseLeftButtonDown="HourPart_MouseLeftButtonDown"
+          Style="{StaticResource Segment}">
+          <TextBlock x:Name="HourText" Style="{StaticResource SegmentText}" />
+        </Border>
+        <TextBlock
+          Margin="1,0"
+          VerticalAlignment="Center"
+          Foreground="{DynamicResource SecondaryTextBrush}"
+          Style="{StaticResource SegmentText}"
+          Text=":" />
+        <Border
+          x:Name="MinutePart"
+          MouseLeftButtonDown="MinutePart_MouseLeftButtonDown"
+          Style="{StaticResource Segment}">
+          <TextBlock x:Name="MinuteText" Style="{StaticResource SegmentText}" />
+        </Border>
+      </StackPanel>
+    </DockPanel>
+  </Border>
+</UserControl>

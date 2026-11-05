@@ -1,0 +1,116 @@
+<UserControl
+  x:Class="Uzor.Wpf.Controls.AlertDialog"
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:uzor="clr-namespace:Uzor.Wpf"
+  Width="420"
+  Background="Transparent">
+
+  <!--
+    Diálogo de aviso/confirmação: o ícone no quadradinho da cor do tom, o título e a mensagem do lado, "ver detalhes"
+    que abre o texto técnico ali mesmo (erro inteiro, com botão de copiar) e o rodapé com os botões. Enter =
+    principal, Esc = secundário. Quem abre é o DialogService.
+  -->
+  <Border Background="Transparent" Style="{StaticResource DialogBorderAnimated}">
+    <Grid>
+      <Border Style="{StaticResource DialogShadow}" />
+      <Border Style="{StaticResource DialogCard}">
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+          </Grid.RowDefinitions>
+
+          <Grid Margin="24,22,24,22">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Border
+              x:Name="IconTile"
+              Margin="0,0,16,0"
+              VerticalAlignment="Top"
+              Style="{StaticResource DialogIconTile}">
+              <Path
+                x:Name="HeaderIcon"
+                Width="18"
+                Height="18"
+                Stretch="Uniform" />
+            </Border>
+
+            <StackPanel Grid.Column="1">
+              <TextBlock
+                x:Name="TitleText"
+                Margin="0,1,0,0"
+                FontSize="{StaticResource FontSize.Lg}"
+                FontWeight="SemiBold"
+                Foreground="{DynamicResource PrimaryTextBrush}"
+                TextTrimming="CharacterEllipsis" />
+
+              <TextBlock
+                x:Name="MessageText"
+                Margin="0,6,0,0"
+                FontSize="{StaticResource FontSize.Body}"
+                Foreground="{DynamicResource SecondaryTextBrush}"
+                LineHeight="19"
+                TextWrapping="Wrap" />
+
+              <TextBlock
+                x:Name="DetailsLink"
+                Margin="0,10,0,0"
+                FontSize="{StaticResource FontSize.Sm}"
+                Visibility="Collapsed">
+                <Hyperlink
+                  Click="DetailsLink_Click"
+                  Foreground="{DynamicResource Accent.TextBrush}"
+                  TextDecorations="{x:Null}">
+                  <Run x:Name="DetailsLinkText" Text="{x:Static uzor:Texts.ShowDetails}" />
+                </Hyperlink>
+              </TextBlock>
+
+              <Border
+                x:Name="DetailsCard"
+                Margin="0,10,0,0"
+                Padding="10,8"
+                Style="{StaticResource DialogInfoCard}"
+                Visibility="Collapsed">
+                <ScrollViewer MaxHeight="220" VerticalScrollBarVisibility="Auto">
+                  <TextBlock
+                    x:Name="DetailsText"
+                    FontFamily="{StaticResource FontFamily.Numbers}"
+                    FontSize="{StaticResource FontSize.Sm}"
+                    Foreground="{DynamicResource SecondaryTextBrush}"
+                    TextWrapping="Wrap" />
+                </ScrollViewer>
+              </Border>
+            </StackPanel>
+          </Grid>
+
+          <Border Grid.Row="1" Style="{StaticResource DialogFooter}">
+            <DockPanel>
+              <Button
+                x:Name="CopyButton"
+                Click="CopyButton_Click"
+                Content="{x:Static uzor:Texts.CopyDetails}"
+                DockPanel.Dock="Left"
+                Style="{StaticResource Action.Dialog}"
+                Visibility="Collapsed" />
+              <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                <Button
+                  x:Name="SecondaryButton"
+                  Margin="0,0,8,0"
+                  Click="SecondaryButton_Click"
+                  Style="{StaticResource Action.Dialog}"
+                  Visibility="Collapsed" />
+                <Button
+                  x:Name="PrimaryButton"
+                  Click="PrimaryButton_Click"
+                  Style="{StaticResource Action.Dialog.Primary}" />
+              </StackPanel>
+            </DockPanel>
+          </Border>
+        </Grid>
+      </Border>
+    </Grid>
+  </Border>
+</UserControl>

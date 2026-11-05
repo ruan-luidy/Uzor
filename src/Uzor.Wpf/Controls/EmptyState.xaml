@@ -1,0 +1,67 @@
+<UserControl
+  x:Class="Uzor.Wpf.Controls.EmptyState"
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  x:Name="Root"
+  HorizontalAlignment="Center"
+  VerticalAlignment="Center"
+  IsTabStop="False">
+
+  <!--
+    Estado vazio de painel (Windfinder + o quadrado do rnz): o ícone num quadrado de raio 12, o título, uma linha do
+    que vai aparecer ali e, quando faz sentido, a ação. Cinza secundário, não o terciário: o terciário some no escuro.
+
+      <controls:EmptyState
+        Icon="{icons:Phosphor TrayBold}"
+        Title="Nada por aqui ainda"
+        Text="..."
+        ActionText="Criar o primeiro"
+        ActionCommand="{Binding NewCommand}" />
+  -->
+  <StackPanel MaxWidth="380" Margin="24,12">
+    <Border
+      x:Name="IconTile"
+      Width="56"
+      Height="56"
+      HorizontalAlignment="Center"
+      Background="{DynamicResource Nav.SelectedBrush}"
+      CornerRadius="{StaticResource Radius.XL}">
+      <Path
+        Width="26"
+        Height="26"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+        Data="{Binding Icon, ElementName=Root}"
+        Fill="{DynamicResource SecondaryTextBrush}"
+        Opacity="0.7"
+        Stretch="Uniform" />
+    </Border>
+
+    <TextBlock
+      x:Name="TitleText"
+      Margin="0,14,0,0"
+      FontSize="{StaticResource FontSize.Md}"
+      FontWeight="SemiBold"
+      Foreground="{DynamicResource PrimaryTextBrush}"
+      Text="{Binding Title, ElementName=Root}"
+      TextAlignment="Center"
+      TextWrapping="Wrap" />
+
+    <TextBlock
+      x:Name="BodyText"
+      Margin="0,4,0,0"
+      FontSize="{StaticResource FontSize.Sm}"
+      Foreground="{DynamicResource SecondaryTextBrush}"
+      Text="{Binding Text, ElementName=Root}"
+      TextAlignment="Center"
+      TextWrapping="Wrap" />
+
+    <Button
+      Margin="0,16,0,0"
+      HorizontalAlignment="Center"
+      Command="{Binding ActionCommand, ElementName=Root}"
+      Content="{Binding ActionText, ElementName=Root}"
+      Style="{StaticResource Action}"
+      Visibility="{Binding ActionText, ElementName=Root, Converter={StaticResource String2VisibilityConverter}}" />
+  </StackPanel>
+</UserControl>

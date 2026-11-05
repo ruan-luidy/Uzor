@@ -1,0 +1,81 @@
+<UserControl
+  x:Class="Uzor.Gallery.Pages.FieldsPage"
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:controls="clr-namespace:Uzor.Wpf.Controls;assembly=Uzor.Wpf"
+  xmlns:hc="https://handyorg.github.io/handycontrol"
+  xmlns:icons="clr-namespace:Uzor.Wpf.Icons;assembly=Uzor.Wpf"
+  xmlns:uzor="clr-namespace:Uzor.Wpf;assembly=Uzor.Wpf">
+
+  <Grid Margin="16">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+    </Grid.RowDefinitions>
+    <controls:PageHeader Title="Campos" Subtitle="Texto, várias linhas, busca, seleção, data e hora, horário e senha. O texto de exemplo fica até digitar." />
+    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+      <StackPanel Margin="0,0,8,16">
+        <TextBlock Style="{StaticResource GallerySection}" Text="TEXTO" />
+        <Border Style="{StaticResource GalleryCard}">
+          <UniformGrid Columns="2">
+            <StackPanel Margin="0,0,16,12">
+              <TextBlock Style="{StaticResource DialogFieldLabel}" Text="Field (vazio)" />
+              <hc:TextBox hc:InfoElement.Placeholder="Nome da peça" Style="{StaticResource Field}" />
+            </StackPanel>
+            <StackPanel Margin="0,0,0,12">
+              <TextBlock Style="{StaticResource DialogFieldLabel}" Text="Field (preenchido)" />
+              <hc:TextBox Style="{StaticResource Field}" Text="Eixo de transmissão Ø32" />
+            </StackPanel>
+            <StackPanel Margin="0,0,16,0">
+              <TextBlock Style="{StaticResource DialogFieldLabel}" Text="SearchBox" />
+              <hc:TextBox Width="Auto" hc:InfoElement.Placeholder="Buscar por nome ou código" Style="{StaticResource SearchBox}" />
+            </StackPanel>
+            <StackPanel>
+              <TextBlock Style="{StaticResource DialogFieldLabel}" Text="FilterBox" />
+              <hc:TextBox HorizontalAlignment="Left" Style="{StaticResource FilterBox}" />
+            </StackPanel>
+          </UniformGrid>
+        </Border>
+
+        <TextBlock Style="{StaticResource GallerySection}" Text="VÁRIAS LINHAS" />
+        <Border Style="{StaticResource GalleryCard}">
+          <hc:TextBox
+            Height="88"
+            VerticalContentAlignment="Top"
+            hc:InfoElement.Placeholder="Observação: escreve do alto e rola"
+            AcceptsReturn="True"
+            Style="{StaticResource Field}"
+            TextWrapping="Wrap"
+            VerticalScrollBarVisibility="Auto" />
+        </Border>
+
+        <TextBlock Style="{StaticResource GallerySection}" Text="SELEÇÃO, DATA E HORA" />
+        <Border Style="{StaticResource GalleryCard}">
+          <UniformGrid Columns="2">
+            <StackPanel Margin="0,0,16,12">
+              <TextBlock Style="{StaticResource DialogFieldLabel}" Text="SelectField" />
+              <controls:SelectField x:Name="Select" Placeholder="Escolha o fornecedor" />
+            </StackPanel>
+            <StackPanel Margin="0,0,0,12">
+              <TextBlock Style="{StaticResource DialogFieldLabel}" Text="DateTimeField" />
+              <controls:DateTimeField x:Name="Deadline" />
+            </StackPanel>
+            <StackPanel Margin="0,0,16,0">
+              <TextBlock Style="{StaticResource DialogFieldLabel}" Text="TimeEditor" />
+              <controls:TimeEditor x:Name="Time" Width="110" HorizontalAlignment="Left" />
+            </StackPanel>
+            <StackPanel>
+              <TextBlock Style="{StaticResource DialogFieldLabel}" Text="hc:DatePicker" />
+              <hc:DatePicker hc:InfoElement.Placeholder="Desde" />
+            </StackPanel>
+          </UniformGrid>
+        </Border>
+
+        <TextBlock Style="{StaticResource GallerySection}" Text="SENHA" />
+        <Border Style="{StaticResource GalleryCard}">
+          <hc:PasswordBox Width="280" HorizontalAlignment="Left" hc:InfoElement.Placeholder="Senha" ShowEyeButton="True" />
+        </Border>
+      </StackPanel>
+    </ScrollViewer>
+  </Grid>
+</UserControl>

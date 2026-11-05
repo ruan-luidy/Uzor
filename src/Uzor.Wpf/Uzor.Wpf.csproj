@@ -1,0 +1,43 @@
+<!--
+  Uzor: o kit de interface WPF dos apps (Provodnik, Elektrozavodsk, Windfinder, Handoff, Negativo...). Estilos em
+  cima do HandyControl, controles, comportamentos, animações e os serviços de tema, diálogo e aviso. O app junta os
+  dicionários de Themes/ depois do tema do HandyControl (ver o README) e usa as chaves daqui.
+-->
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>Uzor.Wpf</RootNamespace>
+    <PackageId>Uzor.Wpf</PackageId>
+    <Description>Kit de interface WPF em cima do HandyControl: camadas translúcidas, diálogos, campos, tabelas, tooltip, tema claro e escuro com a troca em onda.</Description>
+    <PackageTags>wpf;handycontrol;design-system;ui</PackageTags>
+    <RepositoryUrl>https://github.com/ruan-luidy/Uzor</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <!--  CA1822: handler do XAML não pode virar static (o BAML pede instância)  -->
+    <NoWarn>$(NoWarn);CA1822</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="HandyControls" />
+    <PackageReference Include="MahApps.Metro.IconPacks.PhosphorIcons" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" Visible="false" />
+  </ItemGroup>
+
+  <!--
+    XAML fora do Page não vira BAML: o build passa e o app só quebra ao abrir a tela. Vira erro de build aqui.
+  -->
+  <Target Name="ConferirXamlNoPage" BeforeTargets="MarkupCompilePass1">
+    <ItemGroup>
+      <XamlNoDisco Include="Themes\**\*.xaml;Controls\**\*.xaml" />
+      <XamlForaDoPage Include="@(XamlNoDisco)" Exclude="@(Page)" />
+    </ItemGroup>
+    <Error Condition="'@(XamlForaDoPage)' != ''" Text="XAML fora do Page: @(XamlForaDoPage)." />
+  </Target>
+
+</Project>

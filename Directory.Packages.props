@@ -1,0 +1,15 @@
+<Project>
+
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+  </PropertyGroup>
+
+  <!--  As mesmas versões dos apps: o HandyControl em especial tem que bater com o de quem usa a Uzor  -->
+  <ItemGroup>
+    <PackageVersion Include="HandyControls" Version="3.6.0" />
+    <PackageVersion Include="MahApps.Metro.IconPacks.PhosphorIcons" Version="6.2.1" />
+    <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+  </ItemGroup>
+
+</Project>

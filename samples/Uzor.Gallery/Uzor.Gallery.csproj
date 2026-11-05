@@ -1,0 +1,17 @@
+<!--  A vitrine da Uzor: todos os estilos e controles, no claro e no escuro, e a foto deles fora da tela (opção snapshots na linha de comando)  -->
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>Uzor.Gallery</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <NoWarn>$(NoWarn);CA1822</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Uzor.Wpf\Uzor.Wpf.csproj" />
+  </ItemGroup>
+
+</Project>
