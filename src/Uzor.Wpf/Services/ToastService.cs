@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
+using MahApps.Metro.IconPacks;
 using Uzor.Wpf.Controls;
 
 namespace Uzor.Wpf.Services
@@ -11,26 +12,52 @@ namespace Uzor.Wpf.Services
   /// Toasts (o UpdateToastService do rnzNegativeObserver, pelo Windfinder) no lugar do Growl do HandyControl:
   /// empilhados no topo, no centro da janela ativa, numa camada de adorno - por cima de tudo, até de diálogo.
   /// No máximo quatro de cada vez: o mais antigo sai pra dar lugar.
+  ///
+  /// <para>Todo toast devolve um <see cref="ToastHandle"/>: dá pra abrir "processando" e trocar pelo resultado no
+  /// MESMO cartão, sem um sair e outro entrar.</para>
   /// </summary>
   public static class ToastService
   {
     private const int MaxToasts = 4;
 
-    private static readonly TimeSpan Short = TimeSpan.FromSeconds(3);
+    internal static readonly TimeSpan Short = TimeSpan.FromSeconds(3);
+    internal static readonly TimeSpan Medium = TimeSpan.FromSeconds(4);
+    internal static readonly TimeSpan Long = TimeSpan.FromSeconds(5);
 
     private static AdornerStack? _stack;
     private static AdornerLayer? _layer;
 
-    public static void Info(string message, string? title = null) => Show(DialogKind.Info, title ?? Texts.ToastInfo, message, Short);
+    public static ToastHandle Info(string message, string? title = null) => Show(DialogKind.Info, title ?? Texts.ToastInfo, message, Short);
 
-    public static void Success(string message, string? title = null) => Show(DialogKind.Success, title ?? Texts.ToastSuccess, message, Short);
+    public static ToastHandle Success(string message, string? title = null) => Show(DialogKind.Success, title ?? Texts.ToastSuccess, message, Short);
 
-    public static void Warning(string message, string? title = null) => Show(DialogKind.Warning, title ?? Texts.ToastWarning, message, TimeSpan.FromSeconds(4));
+    public static ToastHandle Warning(string message, string? title = null) => Show(DialogKind.Warning, title ?? Texts.ToastWarning, message, Medium);
 
-    public static void Error(string message, string? title = null) => Show(DialogKind.Error, title ?? Texts.ToastError, message, TimeSpan.FromSeconds(5));
+    public static ToastHandle Error(string message, string? title = null) => Show(DialogKind.Error, title ?? Texts.ToastError, message, Long);
 
     /// <param name="lifetime">Quanto fica; null = até fechar no X.</param>
-    public static void Show(DialogKind kind, string title, string message, TimeSpan? lifetime, string? actionText = null, Action? action = null)
+    /// <param name="icon">Outro ícone no lugar do padrão do tom.</param>
+    public static ToastHandle Show(DialogKind kind, string title, string message, TimeSpan? lifetime, string? actionText = null,
+      Action? action = null, PackIconPhosphorIconsKind? icon = null)
+    {
+      var handle = new ToastHandle();
+      handle.Show(kind, title, message, lifetime, actionText, action, icon);
+      return handle;
+    }
+
+    /// <summary>Algo rodando, sem prazo: troque pelo resultado com o handle (Success, Error...) quando acabar.</summary>
+    public static ToastHandle Busy(string title, string message)
+    {
+      var handle = new ToastHandle();
+      handle.Busy(title, message);
+      return handle;
+    }
+
+    /// <summary>
+    /// Roda no cartão do handle, na thread da tela. Se ele já saiu (fechou no X, acabou o tempo, deu lugar a outro),
+    /// abre um novo: o resultado de uma operação não pode se perder porque o "processando" foi fechado.
+    /// </summary>
+    internal static void Run(ToastHandle handle, Action<Toast> configure)
     {
       var app = Application.Current;
       if (app is null)
@@ -38,14 +65,20 @@ namespace Uzor.Wpf.Services
 
       app.Dispatcher.InvokeAsync(() =>
       {
-        var window = app.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive) ?? app.MainWindow;
-        if (window is not { IsLoaded: true, IsVisible: true } || InWindow(window) is not { } stack)
-          return;
+        if (handle.Card is not { IsClosing: false } toast)
+        {
+          var window = app.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive) ?? app.MainWindow;
+          if (window is not { IsLoaded: true, IsVisible: true } || InWindow(window) is not { } stack)
+            return;
 
-        var toast = new Toast();
-        toast.Closed += (_, _) => stack.Remove(toast);
-        stack.Add(toast);
-        toast.Show(kind, title, message, lifetime, actionText, action);
+          toast = new Toast();
+          var added = toast;
+          added.Closed += (_, _) => stack.Remove(added);
+          stack.Add(added);
+          handle.Card = added;
+        }
+
+        configure(toast);
       });
     }
 
@@ -101,7 +134,11 @@ namespace Uzor.Wpf.Services
       public void Add(Toast toast)
       {
         while (_panel.Children.Count >= MaxToasts)
+        {
+          if (_panel.Children[0] is Toast oldest)
+            oldest.Detach();
           _panel.Children.RemoveAt(0);
+        }
 
         _panel.Children.Add(toast);
         InvalidateMeasure();
@@ -144,6 +181,35 @@ namespace Uzor.Wpf.Services
 
         return null;
       }
+    }
+  }
+
+  /// <summary>
+  /// Um toast já aberto (ou a caminho da tela): troca o conteúdo dele no lugar, ou fecha. Pode ser chamado de qualquer
+  /// thread - tudo vai pra fila da tela, na ordem.
+  /// </summary>
+  public sealed class ToastHandle
+  {
+    /// <summary>O cartão na tela; só mexido na thread da tela.</summary>
+    internal Toast? Card { get; set; }
+
+    public void Show(DialogKind kind, string title, string message, TimeSpan? lifetime, string? actionText = null,
+      Action? action = null, PackIconPhosphorIconsKind? icon = null)
+      => ToastService.Run(this, t => t.Show(kind, title, message, lifetime, actionText, action, icon));
+
+    public void Busy(string title, string message) => ToastService.Run(this, t => t.ShowBusy(title, message));
+
+    public void Info(string message, string? title = null) => Show(DialogKind.Info, title ?? Texts.ToastInfo, message, ToastService.Short);
+
+    public void Success(string message, string? title = null) => Show(DialogKind.Success, title ?? Texts.ToastSuccess, message, ToastService.Short);
+
+    public void Warning(string message, string? title = null) => Show(DialogKind.Warning, title ?? Texts.ToastWarning, message, ToastService.Medium);
+
+    public void Error(string message, string? title = null) => Show(DialogKind.Error, title ?? Texts.ToastError, message, ToastService.Long);
+
+    public void Hide()
+    {
+      Application.Current?.Dispatcher.InvokeAsync(() => Card?.Hide());
     }
   }
 }

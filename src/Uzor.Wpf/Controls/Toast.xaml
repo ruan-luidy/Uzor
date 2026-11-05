@@ -3,6 +3,7 @@
   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:icons="clr-namespace:Uzor.Wpf.Icons"
+  xmlns:local="clr-namespace:Uzor.Wpf.Controls"
   HorizontalAlignment="Center"
   VerticalAlignment="Top">
 
@@ -45,16 +46,61 @@
         To="0"
         Duration="0:0:0.2" />
     </Storyboard>
+
+    <!--
+      Troca de conteúdo no MESMO cartão ("processando" virando "pronto"): o texto acende de leve em vez de o cartão
+      sair e entrar de novo
+    -->
+    <Storyboard x:Key="Swap">
+      <DoubleAnimation
+        Storyboard.TargetName="Body"
+        Storyboard.TargetProperty="Opacity"
+        From="0.35"
+        To="1"
+        Duration="0:0:0.22">
+        <DoubleAnimation.EasingFunction>
+          <CubicEase EasingMode="EaseOut" />
+        </DoubleAnimation.EasingFunction>
+      </DoubleAnimation>
+    </Storyboard>
+
+    <!--  O X: transparente, acende no hover como os botões sem borda do Uzor  -->
+    <Style x:Key="ToastCloseButton" TargetType="Button">
+      <Setter Property="Width" Value="26" />
+      <Setter Property="Height" Value="26" />
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Focusable" Value="False" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border
+              x:Name="Bg"
+              Background="Transparent"
+              CornerRadius="6">
+              <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="Bg" Property="Background" Value="{DynamicResource Button.HoverBrush}" />
+              </Trigger>
+              <Trigger Property="IsPressed" Value="True">
+                <Setter TargetName="Bg" Property="Background" Value="{DynamicResource Button.PressedBrush}" />
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
   </UserControl.Resources>
 
   <!--
-    As medidas do UpdateToast do Negativo, sem mexer: 380 de largura mínima, raio XL, círculo de 36 com ícone de 20,
-    título Body, o X de 28 no meio da altura e, embaixo, a faixa da ação com o botão padrão de 30 (largura 100)
+    Largura fixa (era 380 a 480 conforme o texto): empilhados, cartões de larguras diferentes pareciam desalinhados.
+    A superfície é a do menu do Windows 11 (Flyout.BackgroundBrush, um degrau acima da janela) com a borda fraca dele,
+    e não a borda dura do HandyControl.
   -->
   <Grid
     x:Name="Card"
-    MinWidth="380"
-    MaxWidth="480"
+    Width="420"
     Margin="0,8,0,0"
     Opacity="0"
     RenderTransformOrigin="0.5,0"
@@ -66,19 +112,20 @@
       A sombra num cartão só dela, atrás: com o efeito no cartão do texto, o WPF desenha tudo como imagem e o texto
       borra
     -->
-    <Border Background="{DynamicResource RegionBrush}" CornerRadius="{StaticResource Radius.XL}">
+    <Border Background="{DynamicResource Flyout.BackgroundBrush}" CornerRadius="{StaticResource Radius.XL}">
       <Border.Effect>
         <DropShadowEffect
           BlurRadius="24"
           Direction="270"
-          Opacity="0.4"
-          ShadowDepth="8"
+          Opacity="0.28"
+          ShadowDepth="6"
           Color="Black" />
       </Border.Effect>
     </Border>
     <Border
-      Background="{DynamicResource RegionBrush}"
-      BorderBrush="{DynamicResource BorderBrush}"
+      x:Name="Surface"
+      Background="{DynamicResource Flyout.BackgroundBrush}"
+      BorderBrush="{DynamicResource Flyout.BorderBrush}"
       BorderThickness="1"
       CornerRadius="{StaticResource Radius.XL}">
 
@@ -86,31 +133,40 @@
         <Grid.RowDefinitions>
           <RowDefinition Height="Auto" />
           <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <Grid Margin="16,10,12,10">
+        <Grid x:Name="Body" Margin="14,12,10,12">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
           </Grid.ColumnDefinitions>
 
+          <!--  O ícone num círculo da cor do tom bem apagada, com o ícone na cor cheia (o chip de status do Uzor)  -->
           <Border
             x:Name="IconDisc"
-            Width="36"
-            Height="36"
-            Margin="0,0,14,0"
-            VerticalAlignment="Center"
-            Background="{DynamicResource PrimaryBrush}"
-            CornerRadius="18">
-            <Path
-              x:Name="IconPath"
-              Width="20"
-              Height="20"
-              HorizontalAlignment="Center"
-              VerticalAlignment="Center"
-              Fill="White"
-              Stretch="Uniform" />
+            Width="34"
+            Height="34"
+            Margin="0,0,12,0"
+            VerticalAlignment="Top"
+            Background="{DynamicResource Accent.SoftBrush}"
+            CornerRadius="17">
+            <Grid>
+              <Path
+                x:Name="IconPath"
+                Width="18"
+                Height="18"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Fill="{DynamicResource Accent.TextBrush}"
+                Stretch="Uniform" />
+              <local:LoadingDots
+                x:Name="BusyDots"
+                HorizontalAlignment="Center"
+                Foreground="{DynamicResource Accent.TextBrush}"
+                Visibility="Collapsed" />
+            </Grid>
           </Border>
 
           <StackPanel Grid.Column="1" VerticalAlignment="Center">
@@ -122,42 +178,38 @@
               TextTrimming="CharacterEllipsis" />
             <TextBlock
               x:Name="MessageText"
-              Margin="0,3,0,0"
+              Margin="0,2,0,0"
               FontSize="{StaticResource FontSize.Sm}"
               Foreground="{DynamicResource SecondaryTextBrush}"
+              LineHeight="17"
               TextWrapping="Wrap" />
           </StackPanel>
 
           <Button
             Grid.Column="2"
-            Width="28"
-            Height="28"
-            Margin="12,0,0,0"
-            Padding="0"
-            VerticalAlignment="Center"
-            BorderThickness="0"
+            Margin="8,-2,0,0"
+            VerticalAlignment="Top"
             Click="Close_Click"
-            Cursor="Hand">
+            Style="{StaticResource ToastCloseButton}">
             <Path
-              Width="14"
-              Height="14"
+              Width="11"
+              Height="11"
               Data="{icons:Phosphor XBold}"
               Fill="{DynamicResource SecondaryTextBrush}"
               Stretch="Uniform" />
           </Button>
         </Grid>
 
+        <!--  A ação (Reiniciar...) embaixo da mensagem, alinhada com o texto; sem faixa de outra cor  -->
         <Border
           x:Name="ActionsBar"
           Grid.Row="1"
-          Padding="12,8"
-          Background="{DynamicResource SecondaryRegionBrush}"
-          CornerRadius="0,0,11,11"
+          Padding="60,0,12,12"
           Visibility="Collapsed">
           <Button
             x:Name="ActionButton"
-            Height="30"
-            MinWidth="100"
+            Height="28"
+            MinWidth="88"
             Padding="14,0"
             HorizontalAlignment="Left"
             Click="Action_Click"
@@ -165,9 +217,30 @@
             <TextBlock
               x:Name="ActionText"
               FontSize="{StaticResource FontSize.Sm}"
-              FontWeight="Medium"
-              Foreground="{DynamicResource PrimaryTextBrush}" />
+              FontWeight="Medium" />
           </Button>
+        </Border>
+
+        <!--
+          O tempo que falta, numa linha fina no pé do cartão que vai encolhendo. Ela É o relógio do toast: para com o
+          mouse em cima e volta quando ele sai, e quem lê vê que dá pra segurar o aviso.
+        -->
+        <Border
+          x:Name="LifeTrack"
+          Grid.Row="2"
+          Height="2"
+          Margin="14,0,14,2"
+          Visibility="Collapsed">
+          <Border
+            x:Name="LifeBar"
+            Background="{DynamicResource Accent.TextBrush}"
+            CornerRadius="1"
+            Opacity="0.5"
+            RenderTransformOrigin="0,0.5">
+            <Border.RenderTransform>
+              <ScaleTransform ScaleX="1" />
+            </Border.RenderTransform>
+          </Border>
         </Border>
       </Grid>
     </Border>
