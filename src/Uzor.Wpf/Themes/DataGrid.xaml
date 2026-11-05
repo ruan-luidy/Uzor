@@ -255,6 +255,34 @@
     </Style.Triggers>
   </Style>
 
+  <!--
+    O texto da célula (o ElementStyle das colunas de texto), vindo do Negativo: número à direita, código e situação no
+    centro, texto à esquerda. A margem de 5 descola o texto da divisória da coluna.
+  -->
+  <Style x:Key="DataGridCellRightAlign" TargetType="TextBlock">
+    <Setter Property="HorizontalAlignment" Value="Right" />
+    <Setter Property="TextAlignment" Value="Right" />
+    <Setter Property="Margin" Value="0,0,5,0" />
+  </Style>
+  <Style x:Key="DataGridCellCenterAlign" TargetType="TextBlock">
+    <Setter Property="HorizontalAlignment" Value="Center" />
+    <Setter Property="TextAlignment" Value="Center" />
+  </Style>
+  <Style x:Key="DataGridCellLeftAlign" TargetType="TextBlock">
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="TextAlignment" Value="Left" />
+    <Setter Property="Margin" Value="5,0,0,0" />
+  </Style>
+  <!--
+    Cabeçalho de coluna de número: à direita, igual à célula. Sem ele o rótulo fica na esquerda e o valor na direita, e
+    a coluna deixa de se ler como uma coisa só. Em par com DataGridCellRightAlign.
+  -->
+  <Style
+    x:Key="DataGridHeaderRightAlign"
+    BasedOn="{StaticResource StandardColumnHeader}"
+    TargetType="DataGridColumnHeader">
+    <Setter Property="HorizontalContentAlignment" Value="Right" />
+  </Style>
   <Style
     x:Key="StandardDataGrid"
     BasedOn="{StaticResource DataGrid.Small}"
