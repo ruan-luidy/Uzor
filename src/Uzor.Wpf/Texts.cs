@@ -58,5 +58,8 @@ namespace Uzor.Wpf
     public static string ToastWarning { get; set; } = "Atenção";
 
     public static string ToastError { get; set; } = "Erro";
+
+    /// <summary>A frase do LoadingOverlay quando quem usa não diz o que está carregando.</summary>
+    public static string Loading { get; set; } = "Carregando...";
   }
 }

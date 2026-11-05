@@ -65,6 +65,7 @@ namespace Uzor.Wpf.Services
       SetBrush("Flyout.BackgroundBrush", dark ? Color.FromRgb(0x2B, 0x2B, 0x2E) : Color.FromRgb(0xFB, 0xFB, 0xFC));
       SetBrush("Flyout.BorderBrush", ink, dark ? 0.12 : 0.1);
       SetBrush("Dialog.FooterBrush", Colors.Black, dark ? 0.2 : 0.035);
+      SetBrush("Overlay.VeilBrush", dark ? Colors.Black : Colors.White, dark ? 0.35 : 0.55);
       SetBrush("CheckBox.BorderBrush", ink, dark ? 0.45 : 0.42);
       SetBrush("CheckBox.HoverBorderBrush", ink, dark ? 0.7 : 0.65);
 
