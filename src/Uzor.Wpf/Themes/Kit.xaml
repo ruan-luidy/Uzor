@@ -1477,8 +1477,10 @@
               O cinza da grade, sólido, embaixo do fundo translúcido (06/11/2026): o campo fica com o mesmo cinza de
               sempre e a linha selecionada não passa por ele (antes misturava com o azul; branco ficou estranho).
             -->
+            <!--  Recuada pela borda: o fundo do Bg começa depois do contorno, e sem o recuo sobrava 1 px claro em volta  -->
             <Border
               x:Name="Base"
+              Margin="{TemplateBinding BorderThickness}"
               Background="{DynamicResource SecondaryRegionBrush}"
               CornerRadius="{StaticResource Radius.Sm}" />
             <Border
