@@ -540,48 +540,78 @@
   </Style>
 
   <!--
-    A NavTab num TabControl (06/11/2026, Detalhes do pedido): pra tela com abas de conteúdo usar o mesmo visual sem
-    trocar a lógica pra RadioButton. As abas à esquerda, do tamanho do nome; a aberta com o sublinhado de 2 px no
-    destaque; a linha fina embaixo de ponta a ponta. As largas do HandyControl ficam pras abas das janelas.
-      <TabControl Style="{StaticResource Uzor.Tabs}"> <TabItem Header="Itens">...</TabItem> </TabControl>
-  -->
-  <!--
-    Fonte e cor vão no CABEÇALHO (TextElement no ContentPresenter), não no TabItem: o conteúdo da aba herda do TabItem,
-    e o negrito e o cinza do título vazavam pra grade lá dentro.
+    Abas de conteúdo num TabControl (06/11/2026, Detalhes do pedido): a SectionTab do Handoff - pílula com ícone, nome
+    e o número num selinho, a aberta com o fundo de seleção do item ativo do painel lateral, sem linha embaixo. O ícone
+    vem no Tag e o número no NavBadge.Count (zero não aparece; NavBadge.IsAlert deixa âmbar). O Header é só o TEXTO:
+    o que vai dentro do Header herda do TabItem (não do cabeçalho), e um TextBlock ali saía preto no tema escuro. Fonte
+    e cor do título vão no ContentPresenter, e o TabItem tem a cor do texto do tema pro conteúdo da aba. A mãozinha vai
+    na pílula, não no TabItem: no TabItem ela valia pra tela inteira da aba.
+      <TabControl Style="{StaticResource Uzor.Tabs}">
+        <TabItem Header="Itens" Tag="{uzor:Phosphor ListBulletsBold}" uzor:NavBadge.Count="{Binding Total}">...</TabItem>
+      </TabControl>
+    As largas do HandyControl ficam pras abas das janelas; pra trocar de visão dentro de uma aba, Uzor.SegmentedTabs.
   -->
   <Style x:Key="Uzor.TabItem" TargetType="TabItem">
-    <Setter Property="Cursor" Value="Hand" />
+    <!--  Pro conteúdo da aba: o tema do Windows deixava o TabItem preto, e o conteúdo herda dele  -->
+    <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+    <Setter Property="Margin" Value="0,0,4,0" />
     <Setter Property="FocusVisualStyle" Value="{x:Null}" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="TabItem">
-          <Grid Height="34" Background="Transparent">
-            <ContentPresenter
-              x:Name="Title"
-              Margin="12,0"
-              HorizontalAlignment="Center"
-              VerticalAlignment="Center"
-              ContentSource="Header"
-              RecognizesAccessKey="True"
-              TextElement.FontSize="{StaticResource FontSize.Body}"
-              TextElement.FontWeight="SemiBold"
-              TextElement.Foreground="{DynamicResource SecondaryTextBrush}" />
-            <Border
-              x:Name="Underline"
-              Height="2"
-              Margin="6,0"
-              VerticalAlignment="Bottom"
-              Background="{DynamicResource PrimaryBrush}"
-              CornerRadius="1"
-              Visibility="Hidden" />
-          </Grid>
+          <Border
+            x:Name="Pill"
+            Cursor="Hand"
+            Height="32"
+            Padding="11,0"
+            Background="Transparent"
+            CornerRadius="{StaticResource Radius.Md}">
+            <StackPanel Orientation="Horizontal">
+              <Path
+                x:Name="Icon"
+                Width="14"
+                Height="14"
+                Margin="0,0,8,0"
+                VerticalAlignment="Center"
+                Data="{TemplateBinding Tag}"
+                Fill="{DynamicResource SecondaryTextBrush}"
+                Stretch="Uniform" />
+              <ContentPresenter
+                x:Name="Title"
+                VerticalAlignment="Center"
+                ContentSource="Header"
+                RecognizesAccessKey="True"
+                TextElement.FontSize="{StaticResource FontSize.Body}"
+                TextElement.FontWeight="SemiBold"
+                TextElement.Foreground="{DynamicResource SecondaryTextBrush}" />
+              <Border x:Name="Badge" Style="{StaticResource TabCount}">
+                <ContentPresenter
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center"
+                  Content="{TemplateBinding controls:NavBadge.Count}" />
+              </Border>
+            </StackPanel>
+          </Border>
           <ControlTemplate.Triggers>
+            <Trigger Property="Tag" Value="{x:Null}">
+              <Setter TargetName="Icon" Property="Visibility" Value="Collapsed" />
+            </Trigger>
+            <Trigger Property="controls:NavBadge.Count" Value="0">
+              <Setter TargetName="Badge" Property="Visibility" Value="Collapsed" />
+            </Trigger>
+            <Trigger Property="controls:NavBadge.IsAlert" Value="True">
+              <Setter TargetName="Badge" Property="Background" Value="{DynamicResource Warning.SoftBrush}" />
+              <Setter TargetName="Badge" Property="TextElement.Foreground" Value="{DynamicResource Warning.TextBrush}" />
+            </Trigger>
             <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="Pill" Property="Background" Value="{DynamicResource Hover.RowBrush}" />
               <Setter TargetName="Title" Property="TextElement.Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+              <Setter TargetName="Icon" Property="Fill" Value="{DynamicResource PrimaryTextBrush}" />
             </Trigger>
             <Trigger Property="IsSelected" Value="True">
+              <Setter TargetName="Pill" Property="Background" Value="{DynamicResource Nav.SelectedBrush}" />
               <Setter TargetName="Title" Property="TextElement.Foreground" Value="{DynamicResource PrimaryTextBrush}" />
-              <Setter TargetName="Underline" Property="Visibility" Value="Visible" />
+              <Setter TargetName="Icon" Property="Fill" Value="{DynamicResource PrimaryTextBrush}" />
             </Trigger>
             <Trigger Property="IsEnabled" Value="False">
               <Setter Property="Opacity" Value="0.4" />
@@ -605,16 +635,12 @@
               <RowDefinition Height="Auto" />
               <RowDefinition Height="*" />
             </Grid.RowDefinitions>
-            <Border
-              Padding="4,0"
-              BorderBrush="{DynamicResource Divider.Brush}"
-              BorderThickness="0,0,0,1">
-              <TabPanel
-                x:Name="HeaderPanel"
-                Panel.ZIndex="1"
-                IsItemsHost="True"
-                KeyboardNavigation.TabIndex="1" />
-            </Border>
+            <StackPanel
+              x:Name="HeaderPanel"
+              Panel.ZIndex="1"
+              IsItemsHost="True"
+              KeyboardNavigation.TabIndex="1"
+              Orientation="Horizontal" />
             <ContentPresenter
               x:Name="PART_SelectedContentHost"
               Grid.Row="1"
@@ -633,7 +659,8 @@
       <TabControl Style="{StaticResource Uzor.SegmentedTabs}"> <TabItem Header="Resumo">...</TabItem> </TabControl>
   -->
   <Style x:Key="Uzor.SegmentTabItem" TargetType="TabItem">
-    <Setter Property="Cursor" Value="Hand" />
+    <!--  Pro conteúdo da aba: o tema do Windows deixava o TabItem preto, e os títulos lá dentro não trocavam no escuro  -->
+    <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
     <Setter Property="FocusVisualStyle" Value="{x:Null}" />
     <Setter Property="Margin" Value="0,0,1,0" />
     <Setter Property="Template">
@@ -641,6 +668,7 @@
         <ControlTemplate TargetType="TabItem">
           <Border
             x:Name="Segment"
+            Cursor="Hand"
             Height="{StaticResource Control.Height}"
             MinWidth="96"
             Padding="14,0"
