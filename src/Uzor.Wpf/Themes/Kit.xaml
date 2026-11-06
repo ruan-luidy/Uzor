@@ -646,6 +646,11 @@
               Grid.Row="1"
               Margin="{TemplateBinding Padding}"
               ContentSource="SelectedContent" />
+            <!--  As abas guardadas do KeepAliveTabControl (o TabControl comum deixa vazio e usa o de cima)  -->
+            <Grid
+              x:Name="PART_ItemsHolder"
+              Grid.Row="1"
+              Margin="{TemplateBinding Padding}" />
           </Grid>
         </ControlTemplate>
       </Setter.Value>
@@ -726,6 +731,11 @@
               Grid.Row="1"
               Margin="{TemplateBinding Padding}"
               ContentSource="SelectedContent" />
+            <!--  As abas guardadas do KeepAliveTabControl (o TabControl comum deixa vazio e usa o de cima)  -->
+            <Grid
+              x:Name="PART_ItemsHolder"
+              Grid.Row="1"
+              Margin="{TemplateBinding Padding}" />
           </Grid>
         </ControlTemplate>
       </Setter.Value>
