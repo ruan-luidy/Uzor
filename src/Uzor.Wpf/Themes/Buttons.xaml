@@ -268,64 +268,71 @@
   </Style>
 
   <!--
-    ═══════════════════════════════════════════════════════════════
-    ToggleButtonDropdown — botão "abre popup" estilo dropdown
-    Conteúdo + caret right; hover/checked trocam pra SecondaryRegion
-    BorderThickness/FontSize via TemplateBinding pra cobrir variantes
-    (Visualization sem borda+Lg, Adherence/LoadAnalysis com borda+Sm)
-    Antes vivia inline em 8 ToggleButton.Template (3 Adherence,
-    2 LoadAnalysis, 3 Visualization).
-    ═══════════════════════════════════════════════════════════════
+    ToggleButtonDropdown: o botão que abre um popup (período, centros, colunas...). É o MESMO campo do combo (Uzor.Combo,
+    06/11/2026): fundo translúcido dos botões, sem borda, raio 4, 28 de altura, mais claro no mouse e aberto, e a seta
+    que vira pra cima com o popup aberto. O popup que ele abre usa o cartão Uzor.Flyout.
   -->
   <Style x:Key="ToggleButtonDropdown" TargetType="ToggleButton">
     <!--  Sem isto o WPF desenha o retangulo pontilhado padrao depois do clique  -->
     <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}" />
-    <Setter Property="Background" Value="Transparent" />
-    <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
-    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Background" Value="{DynamicResource Button.BackgroundBrush}" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
     <Setter Property="Cursor" Value="Hand" />
-    <Setter Property="Padding" Value="10,5" />
-    <Setter Property="FontSize" Value="{StaticResource FontSize.Sm}" />
-    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="MinHeight" Value="{StaticResource Control.Height}" />
+    <Setter Property="Padding" Value="10,0" />
+    <Setter Property="FontSize" Value="{StaticResource FontSize.Body}" />
     <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+    <Setter Property="HorizontalContentAlignment" Value="Left" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="ToggleButton">
           <Border
+            x:Name="Field"
             Padding="{TemplateBinding Padding}"
             Background="{TemplateBinding Background}"
             BorderBrush="{TemplateBinding BorderBrush}"
             BorderThickness="{TemplateBinding BorderThickness}"
-            CornerRadius="{StaticResource Radius.Sm}"
-            Cursor="Hand">
-            <Grid VerticalAlignment="Center">
+            CornerRadius="{StaticResource Radius.Sm}">
+            <Grid VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
               </Grid.ColumnDefinitions>
               <ContentPresenter
+                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                 VerticalAlignment="Center"
                 RecognizesAccessKey="True"
                 TextElement.FontSize="{TemplateBinding FontSize}"
                 TextElement.FontWeight="{TemplateBinding FontWeight}"
                 TextElement.Foreground="{TemplateBinding Foreground}" />
               <iconPacks:PackIconPhosphorIcons
+                x:Name="Chevron"
                 Grid.Column="1"
-                Width="12"
-                Height="12"
-                Margin="6,0,0,0"
+                Width="10"
+                Height="10"
+                Margin="8,0,0,0"
                 VerticalAlignment="Center"
                 Foreground="{DynamicResource SecondaryTextBrush}"
-                Kind="CaretDownBold" />
+                Kind="CaretDownBold"
+                RenderTransformOrigin="0.5,0.5" />
             </Grid>
           </Border>
           <ControlTemplate.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-              <Setter Property="Background" Value="{DynamicResource SecondaryRegionBrush}" />
+              <Setter TargetName="Field" Property="Background" Value="{DynamicResource Button.HoverBrush}" />
             </Trigger>
             <Trigger Property="IsChecked" Value="True">
-              <Setter Property="Background" Value="{DynamicResource SecondaryRegionBrush}" />
+              <Setter TargetName="Field" Property="Background" Value="{DynamicResource Button.HoverBrush}" />
+              <Setter TargetName="Chevron" Property="RenderTransform">
+                <Setter.Value>
+                  <RotateTransform Angle="180" />
+                </Setter.Value>
+              </Setter>
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter Property="Opacity" Value="0.4" />
             </Trigger>
           </ControlTemplate.Triggers>
         </ControlTemplate>
