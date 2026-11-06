@@ -190,16 +190,20 @@
                 Stretch="Uniform"
                 Visibility="Collapsed" />
             </Grid>
-            <!--  O submenu: o mesmo cartão, encostado à direita do item  -->
+            <!--
+              O submenu: o mesmo cartão, 2 à direita do cartão do menu (o item termina 5 antes da borda dele: 4 de
+              respiro + 1 de borda) e com o primeiro item na linha do item que abriu (-5 = respiro + borda do
+              cartão do submenu). A folga da sombra é a margem do filho do Popup, que o WPF já desconta ao posicionar.
+            -->
             <Popup
               x:Name="PART_Popup"
               AllowsTransparency="True"
               Focusable="False"
-              HorizontalOffset="-12"
+              HorizontalOffset="7"
               IsOpen="{Binding IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}}"
               Placement="Right"
               PopupAnimation="Fade"
-              VerticalOffset="-12">
+              VerticalOffset="-5">
               <Grid Margin="12,8,12,18">
                 <Border
                   Background="{DynamicResource Flyout.BackgroundBrush}"
