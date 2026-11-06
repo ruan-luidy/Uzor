@@ -37,6 +37,8 @@
     <Setter Property="BorderThickness" Value="0,0,1,1" />
     <Setter Property="BorderBrush" Value="{DynamicResource Grid.DividerBrush}" />
     <Setter Property="Background" Value="Transparent" />
+    <!--  O nome da coluna em SemiBold: o cabeçalho se destaca das linhas sem precisar de fundo próprio (06/11/2026)  -->
+    <Setter Property="FontWeight" Value="SemiBold" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="DataGridColumnHeader">
