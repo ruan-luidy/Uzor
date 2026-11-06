@@ -11,12 +11,18 @@ namespace Uzor.Wpf.Animation
   /// <summary>
   /// A troca de tema em onda (a ideia do LightDarkModeSwitchAnimation, do SlimeNull): fotografa a janela no tema
   /// velho, põe a foto por cima de tudo (barra de título e diálogo aberto inclusive), troca o tema por baixo e abre um
-  /// círculo na foto a partir do mouse. A borda da onda é macia e leva um brilho fino no azul do app; quando o círculo
-  /// passa do canto mais longe, a foto sai.
+  /// círculo na foto a partir do mouse, com a borda macia; quando o círculo passa do canto mais longe, a foto sai.
+  /// <para>Leve de propósito (06/11/2026, "trava tudo"): uma máscara animada só (o brilho na borda era uma segunda, do
+  /// tamanho da janela), 450 ms, a foto desenhada 1:1 sem filtro, e em sessão remota ou sem placa de vídeo a foto só
+  /// esmaece (máscara redonda animada é cara sem GPU). O que segurava a tela de verdade era a troca dos pincéis,
+  /// agora num dicionário só (ThemeService).</para>
   /// </summary>
   public static class ThemeRipple
   {
-    private static readonly Duration Length = TimeSpan.FromMilliseconds(680);
+    private static readonly Duration Length = TimeSpan.FromMilliseconds(450);
+
+    /// <summary>O esmaecer de quando não tem GPU (sessão remota, placa sem aceleração).</summary>
+    private static readonly Duration FadeLength = TimeSpan.FromMilliseconds(200);
 
     /// <summary>Onde a borda macia começa, na fração do raio (8% do raio é degradê).</summary>
     private const double SoftEdge = 0.92;
@@ -49,7 +55,7 @@ namespace Uzor.Wpf.Animation
 
       // O fundo do tema velho embaixo da foto: com Mica a janela é transparente e a foto teria buracos
       var backdrop = (window.TryFindResource("Window.FallbackBrush") as Brush)?.CloneCurrentValue() ?? Brushes.Transparent;
-      var accent = (window.TryFindResource("PrimaryBrush") as SolidColorBrush)?.Color ?? Color.FromRgb(0x37, 0x78, 0xBF);
+      var light = SystemParameters.IsRemoteSession || (RenderCapability.Tier >> 16) < 2;
 
       // Do mouse (o botão que trocou o tema); fora da janela, do meio
       var center = Mouse.GetPosition(root);
@@ -61,12 +67,12 @@ namespace Uzor.Wpf.Animation
 
       // A foto aparece fora do círculo (preto na máscara) e some dentro dele, com o degradê na borda
       var mask = Circle(center, (Colors.Transparent, 0), (Colors.Transparent, SoftEdge), (Colors.Black, 1));
-      var glow = Circle(center, (Colors.Transparent, 0), (Colors.Transparent, 0.9), (Color.FromArgb(0x60, accent.R, accent.G, accent.B), 0.975), (Colors.Transparent, 1));
 
-      var photo = new Grid { OpacityMask = mask };
+      var photo = new Grid { OpacityMask = light ? null : mask };
       photo.Children.Add(new Border { Background = backdrop });
-      photo.Children.Add(new Image { Source = shot, Stretch = Stretch.Fill });
-      var ring = new Border { Background = glow };
+      var image = new Image { Source = shot, Stretch = Stretch.Fill };
+      RenderOptions.SetBitmapScalingMode(image, BitmapScalingMode.NearestNeighbor);
+      photo.Children.Add(image);
 
       // Por cima de tudo no painel raiz da janela, alinhado com a raiz (a borda da janela desloca o painel)
       var offset = host.TranslatePoint(default, root);
@@ -80,7 +86,6 @@ namespace Uzor.Wpf.Animation
         IsHitTestVisible = false,
       };
       veil.Children.Add(photo);
-      veil.Children.Add(ring);
       Grid.SetRowSpan(veil, 64);
       Grid.SetColumnSpan(veil, 64);
       Panel.SetZIndex(veil, int.MaxValue);
@@ -92,16 +97,18 @@ namespace Uzor.Wpf.Animation
       // do tema velho cobre tudo, e o miolo do círculo nunca mostra tela pela metade
       window.Dispatcher.BeginInvoke(DispatcherPriority.ContextIdle, () =>
       {
-        var grow = new DoubleAnimation(0, reach / SoftEdge, Length) { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseInOut } };
-        grow.Completed += (_, _) => host.Children.Remove(veil);
-        foreach (var brush in new[] { mask, glow })
+        if (light)
         {
-          brush.BeginAnimation(RadialGradientBrush.RadiusXProperty, grow);
-          brush.BeginAnimation(RadialGradientBrush.RadiusYProperty, grow);
+          var fade = new DoubleAnimation(1, 0, FadeLength);
+          fade.Completed += (_, _) => host.Children.Remove(veil);
+          photo.BeginAnimation(UIElement.OpacityProperty, fade);
+          return;
         }
 
-        // O brilho acompanha a frente e apaga chegando nos cantos
-        ring.BeginAnimation(UIElement.OpacityProperty, new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(320)) { BeginTime = TimeSpan.FromMilliseconds(360) });
+        var grow = new DoubleAnimation(0, reach / SoftEdge, Length) { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } };
+        grow.Completed += (_, _) => host.Children.Remove(veil);
+        mask.BeginAnimation(RadialGradientBrush.RadiusXProperty, grow);
+        mask.BeginAnimation(RadialGradientBrush.RadiusYProperty, grow);
       });
     }
 

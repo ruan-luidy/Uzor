@@ -130,6 +130,18 @@
     Opacity="0.5"
     ShadowDepth="10"
     Color="Black" />
+  <!--
+    Sombra do que flutua colado no conteúdo (menu de contexto, submenu, menu da bandeja): curta, reta pra baixo e
+    leve, como a do menu do Windows 11. A do cartão (28 na diagonal) não cabia na folga do popup do menu e saía
+    cortada em retângulo. Quem usa deixa 12 dos lados, 8 em cima e 18 embaixo.
+  -->
+  <DropShadowEffect
+    x:Key="Shadow.Flyout"
+    BlurRadius="16"
+    Direction="270"
+    Opacity="0.28"
+    ShadowDepth="3"
+    Color="Black" />
 
   <!--  Font family padrão e a de números (tabular: os dígitos não "dançam" quando o preço muda)  -->
   <FontFamily x:Key="FontFamily.Default">Segoe UI</FontFamily>

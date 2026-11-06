@@ -33,10 +33,25 @@ namespace Uzor.Wpf.Services
         ThemeRipple.Run(window, () => Apply(dark));
     }
 
+    /// <summary>
+    /// A camada de pincéis do tema: UM dicionário, no fim dos mesclados do Application (o último mesclado ganha), que
+    /// a troca de tema substitui inteiro. Antes cada pincel era gravado sozinho em Application.Resources, e cada
+    /// gravação fazia o WPF percorrer a árvore de TODAS as telas abertas atrás de quem usa aquela chave: ~40 passadas
+    /// por troca. Com 36 telas montadas a troca segurava a tela 1 s (4 s na primeira) - "a animação trava tudo".
+    /// </summary>
+    private static ResourceDictionary? _layer;
+
     /// <summary>Na hora e sem animação (a partida do app, a foto das telas).</summary>
     public static void Apply(bool dark)
     {
       ThemeManager.Current.ApplicationTheme = dark ? ApplicationTheme.Dark : ApplicationTheme.Light;
+      var layer = new ResourceDictionary();
+      void SetBrush(string key, Color color, double opacity = 1)
+      {
+        var brush = new SolidColorBrush(color) { Opacity = opacity };
+        brush.Freeze();
+        layer[key] = brush;
+      }
 
       // No escuro clareia (branco), no claro escurece (preto); a barra de rolagem é cinza nos dois, do lado oposto
       var ink = dark ? Colors.White : Colors.Black;
@@ -77,14 +92,23 @@ namespace Uzor.Wpf.Services
       SetBrush("Danger.TextBrush", dark ? Color.FromRgb(0xE5, 0x52, 0x5E) : Color.FromRgb(0xC2, 0x29, 0x35));
       SetBrush("Orange.TextBrush", dark ? Color.FromRgb(0xFF, 0x8A, 0x5C) : Color.FromRgb(0xC2, 0x4A, 0x10));
       SetBrush("Purple.TextBrush", dark ? Color.FromRgb(0xC7, 0x7D, 0xDB) : Color.FromRgb(0x7B, 0x2A, 0x92));
+
+      // Uma troca só na coleção = uma passada pela árvore
+      var merged = Application.Current.Resources.MergedDictionaries;
+      var at = _layer is null ? -1 : merged.IndexOf(_layer);
+      if (at >= 0 && at == merged.Count - 1)
+        merged[at] = layer;
+      else
+      {
+        if (at >= 0)
+          merged.RemoveAt(at);
+        merged.Add(layer);
+      }
+      _layer = layer;
       Changed?.Invoke(null, EventArgs.Empty);
     }
 
-    private static void SetBrush(string key, Color color, double opacity = 1)
-    {
-      var brush = new SolidColorBrush(color) { Opacity = opacity };
-      brush.Freeze();
-      Application.Current.Resources[key] = brush;
-    }
+    /// <summary>A camada de pincéis do tema que está valendo (pra teste e diagnóstico).</summary>
+    public static ResourceDictionary? Layer => _layer;
   }
 }

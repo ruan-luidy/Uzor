@@ -195,16 +195,16 @@
               x:Name="PART_Popup"
               AllowsTransparency="True"
               Focusable="False"
-              HorizontalOffset="-6"
+              HorizontalOffset="-12"
               IsOpen="{Binding IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}}"
               Placement="Right"
               PopupAnimation="Fade"
-              VerticalOffset="-10">
-              <Grid Margin="6,6,10,14">
+              VerticalOffset="-12">
+              <Grid Margin="12,8,12,18">
                 <Border
                   Background="{DynamicResource Flyout.BackgroundBrush}"
                   CornerRadius="{StaticResource Radius.Lg}"
-                  Effect="{DynamicResource Shadow.Card}" />
+                  Effect="{DynamicResource Shadow.Flyout}" />
                 <Border
                   MinWidth="180"
                   Padding="4"
@@ -262,11 +262,11 @@
       <Setter.Value>
         <ControlTemplate TargetType="ContextMenu">
           <!--  Folga pra sombra não cortar  -->
-          <Grid Margin="10,6,10,14">
+          <Grid Margin="12,8,12,18">
             <Border
               Background="{DynamicResource Flyout.BackgroundBrush}"
               CornerRadius="{StaticResource Radius.Lg}"
-              Effect="{DynamicResource Shadow.Card}" />
+              Effect="{DynamicResource Shadow.Flyout}" />
             <Border
               Padding="4"
               Background="{DynamicResource Flyout.BackgroundBrush}"
@@ -342,11 +342,11 @@
       <Setter.Value>
         <ControlTemplate TargetType="ContextMenu">
           <!--  Folga pra sombra não cortar  -->
-          <Grid Margin="10,6,10,14">
+          <Grid Margin="12,8,12,18">
             <Border
               Background="{DynamicResource RegionBrush}"
               CornerRadius="{StaticResource Radius.Lg}"
-              Effect="{StaticResource Shadow.Card}" />
+              Effect="{DynamicResource Shadow.Flyout}" />
             <Border
               Padding="4"
               Background="{DynamicResource RegionBrush}"
