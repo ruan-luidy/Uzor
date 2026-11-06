@@ -59,6 +59,15 @@ namespace Uzor.Wpf
 
     public static string ToastError { get; set; } = "Erro";
 
+    /// <summary>O menu das caixas de texto (Behaviors.TextMenu).</summary>
+    public static string Cut { get; set; } = "Recortar";
+
+    public static string Copy { get; set; } = "Copiar";
+
+    public static string Paste { get; set; } = "Colar";
+
+    public static string SelectAll { get; set; } = "Selecionar tudo";
+
     /// <summary>A frase do LoadingOverlay quando quem usa não diz o que está carregando.</summary>
     public static string Loading { get; set; } = "Carregando...";
   }
