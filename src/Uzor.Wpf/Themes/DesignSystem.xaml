@@ -710,6 +710,8 @@
 
   <!--  "É a última coluna visível?" (célula e cabeçalho dela saem sem o separador da direita)  -->
   <converters:LastColumnConverter x:Key="IsLastColumn" />
+  <!--  "A célula da coluna é à direita?" (o cabeçalho de número vai pra direita sozinho)  -->
+  <converters:RightAlignedColumnConverter x:Key="IsRightAlignedColumn" />
 
   <!--
     Cabeçalho: separador de coluna na direita (mesma cor e mesmo x do das células) e a linha de baixo. A última

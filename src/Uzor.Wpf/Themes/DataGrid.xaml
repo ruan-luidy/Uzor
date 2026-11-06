@@ -149,6 +149,13 @@
         </DataTrigger.Binding>
         <Setter Property="BorderThickness" Value="0,0,0,1" />
       </DataTrigger>
+      <!--
+        Coluna de número: a célula é à direita (ElementStyle DataGridCellRightAlign), então o nome vai pra direita junto,
+        sem precisar do cabeçalho de número coluna por coluna
+      -->
+      <DataTrigger Binding="{Binding Column, RelativeSource={RelativeSource Self}, Converter={StaticResource IsRightAlignedColumn}}" Value="True">
+        <Setter Property="HorizontalContentAlignment" Value="Right" />
+      </DataTrigger>
     </Style.Triggers>
   </Style>
 
@@ -243,6 +250,17 @@
               </DataTrigger.Binding>
               <Setter TargetName="Separator" Property="Visibility" Value="Collapsed" />
             </DataTrigger>
+            <!--
+              Grade que religou a linha vertical do próprio DataGrid (GridLinesVisibility local): a do WPF já é
+              desenhada no último pixel da célula, e com o separador junto saíam DUAS linhas encostadas. Fica a do WPF,
+              que o StandardDataGrid pinta no tom da divisória (nunca o preto padrão dele).
+            -->
+            <DataTrigger Binding="{Binding GridLinesVisibility, RelativeSource={RelativeSource AncestorType=DataGrid}}" Value="Vertical">
+              <Setter TargetName="Separator" Property="Visibility" Value="Collapsed" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding GridLinesVisibility, RelativeSource={RelativeSource AncestorType=DataGrid}}" Value="All">
+              <Setter TargetName="Separator" Property="Visibility" Value="Collapsed" />
+            </DataTrigger>
           </ControlTemplate.Triggers>
         </ControlTemplate>
       </Setter.Value>
@@ -309,6 +327,9 @@
     <Setter Property="Background" Value="{DynamicResource Card.BackgroundBrush}" />
     <!--  As linhas são das células e das linhas (acima), não da grade do DataGrid  -->
     <Setter Property="GridLinesVisibility" Value="None" />
+    <!--  Se uma tela religar a linha, ela sai no tom da divisória: sem pincel o DataGrid pinta preto puro  -->
+    <Setter Property="VerticalGridLinesBrush" Value="{DynamicResource Grid.DividerBrush}" />
+    <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource Grid.DividerBrush}" />
     <Setter Property="HeadersVisibility" Value="Column" />
     <Setter Property="BorderThickness" Value="0" />
 
