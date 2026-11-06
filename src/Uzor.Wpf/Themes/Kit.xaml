@@ -1154,8 +1154,8 @@
   </Style>
   <!--
     Campo dentro da célula da grade (a Qtd Conferida da Conferência, a quantidade a separar...): o fundo dos campos do
-    Uzor, sem o branco do HandyControl, da altura da linha. No foco ganha o traço do accent embaixo (o campo do Windows
-    11), sem mexer na altura. A borda é transparente e desenhada: o gatilho de erro da tela (BorderBrush vermelho) e o
+    Uzor, sem o branco do HandyControl, da altura da linha. No foco a borda de baixo vira o traço do accent, de ponta a
+    ponta e recortada pelos cantos (o campo do Windows 11), sem mexer na altura. A borda é transparente e desenhada: o gatilho de erro da tela (BorderBrush vermelho) e o
     sinal do Dep F continuam aparecendo. Desabilitado (linha já conferida) vira número comum, sem caixinha. Texto à
     esquerda; número no CellField.Number. Por chave: implícito pegaria todo TextBox.
   -->
@@ -1176,7 +1176,8 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="TextBox">
-          <Grid>
+          <!--  O recorte arredondado faz o traço do foco ser a BORDA de baixo do campo (06/11/2026: solto, com margem, parecia um sublinhado avulso)  -->
+          <Grid behaviors:CornerClip.Radius="{StaticResource Radius.Sm}">
             <Border
               x:Name="Bg"
               Background="{TemplateBinding Background}"
@@ -1193,10 +1194,8 @@
             <Border
               x:Name="FocusLine"
               Height="2"
-              Margin="2,0"
               VerticalAlignment="Bottom"
               Background="{DynamicResource PrimaryBrush}"
-              CornerRadius="1"
               Visibility="Collapsed" />
           </Grid>
           <ControlTemplate.Triggers>
