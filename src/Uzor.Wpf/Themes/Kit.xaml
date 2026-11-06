@@ -4,6 +4,7 @@
   xmlns:controls="clr-namespace:Uzor.Wpf.Controls"
   xmlns:converters="clr-namespace:Uzor.Wpf.Converters"
   xmlns:anim="clr-namespace:Uzor.Wpf.Animation"
+  xmlns:behaviors="clr-namespace:Uzor.Wpf.Behaviors"
   xmlns:hc="https://handyorg.github.io/handycontrol"
   xmlns:icons="clr-namespace:Uzor.Wpf.Icons"
   xmlns:system="clr-namespace:System;assembly=mscorlib">
@@ -255,6 +256,105 @@
       </Trigger>
       <Trigger Property="Tone" Value="Purple">
         <Setter Property="Background" Value="{DynamicResource Purple.SoftBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource Purple.TextBrush}" />
+      </Trigger>
+    </Style.Triggers>
+  </Style>
+
+  <!--
+    ========================================
+    BARRA DE QUANTO JÁ FOI (MeterBar)
+    ========================================
+    Trilho fino translúcido, o preenchimento na cor CHEIA do tom (a do HandyControl: Success, Warning, Danger, Info,
+    Primary) e o número ao lado no tom de TEXTO do tema - a regra da casa: cor cheia só em preenchimento, texto no
+    *.TextBrush. Laranja, roxo e neutro não têm a cheia no HandyControl: moram aqui.
+  -->
+  <SolidColorBrush x:Key="Orange.FillBrush" Color="#FF6B35" />
+  <SolidColorBrush x:Key="Purple.FillBrush" Color="#9C27B0" />
+  <SolidColorBrush x:Key="Neutral.FillBrush" Color="#8A8A90" />
+
+  <Style TargetType="controls:MeterBar">
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="IsTabStop" Value="False" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Background" Value="{DynamicResource Progress.TrackBrush}" />
+    <Setter Property="Fill" Value="{DynamicResource PrimaryBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource Accent.TextBrush}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="controls:MeterBar">
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <!--  O trilho recorta o preenchimento reto na forma de pílula (valor pequeno = lasca, não elipse)  -->
+            <Grid
+              x:Name="PART_Track"
+              Height="{TemplateBinding BarHeight}"
+              VerticalAlignment="Center"
+              behaviors:CornerClip.Pill="True">
+              <Border Background="{TemplateBinding Background}" />
+              <Border
+                x:Name="PART_Fill"
+                Width="0"
+                HorizontalAlignment="Left"
+                Background="{TemplateBinding Fill}" />
+            </Grid>
+            <!--  A meta: um traço em pé por cima da barra, fora do recorte  -->
+            <Border
+              x:Name="PART_Target"
+              Width="2"
+              HorizontalAlignment="Left"
+              VerticalAlignment="Center"
+              Background="{DynamicResource SecondaryTextBrush}"
+              CornerRadius="1"
+              Visibility="Collapsed" />
+            <TextBlock
+              x:Name="ValueText"
+              Grid.Column="1"
+              MinWidth="{TemplateBinding TextWidth}"
+              Margin="8,0,0,0"
+              VerticalAlignment="Center"
+              Text="{TemplateBinding DisplayText}"
+              TextAlignment="Right" />
+          </Grid>
+          <ControlTemplate.Triggers>
+            <Trigger Property="ShowText" Value="False">
+              <Setter TargetName="ValueText" Property="Visibility" Value="Collapsed" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+    <Style.Triggers>
+      <Trigger Property="Tone" Value="Neutral">
+        <Setter Property="Fill" Value="{DynamicResource Neutral.FillBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
+      </Trigger>
+      <Trigger Property="Tone" Value="Success">
+        <Setter Property="Fill" Value="{DynamicResource SuccessBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource Success.TextBrush}" />
+      </Trigger>
+      <Trigger Property="Tone" Value="Warning">
+        <Setter Property="Fill" Value="{DynamicResource WarningBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource Warning.TextBrush}" />
+      </Trigger>
+      <Trigger Property="Tone" Value="Danger">
+        <Setter Property="Fill" Value="{DynamicResource DangerBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource Danger.TextBrush}" />
+      </Trigger>
+      <Trigger Property="Tone" Value="Info">
+        <Setter Property="Fill" Value="{DynamicResource InfoBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource Info.TextBrush}" />
+      </Trigger>
+      <Trigger Property="Tone" Value="Orange">
+        <Setter Property="Fill" Value="{DynamicResource Orange.FillBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource Orange.TextBrush}" />
+      </Trigger>
+      <Trigger Property="Tone" Value="Purple">
+        <Setter Property="Fill" Value="{DynamicResource Purple.FillBrush}" />
         <Setter Property="Foreground" Value="{DynamicResource Purple.TextBrush}" />
       </Trigger>
     </Style.Triggers>
@@ -849,6 +949,81 @@
       </Trigger>
     </Style.Triggers>
   </Style>
+  <!--
+    Campo dentro da célula da grade (a Qtd Conferida da Conferência, a quantidade a separar...): o fundo dos campos do
+    Uzor, sem o branco do HandyControl, da altura da linha. No foco ganha o traço do accent embaixo (o campo do Windows
+    11), sem mexer na altura. A borda é transparente e desenhada: o gatilho de erro da tela (BorderBrush vermelho) e o
+    sinal do Dep F continuam aparecendo. Desabilitado (linha já conferida) vira número comum, sem caixinha. Texto à
+    esquerda; número no CellField.Number. Por chave: implícito pegaria todo TextBox.
+  -->
+  <Style x:Key="CellField" TargetType="TextBox">
+    <Setter Property="Height" Value="22" />
+    <Setter Property="MinWidth" Value="56" />
+    <Setter Property="Padding" Value="6,0" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="HorizontalContentAlignment" Value="Left" />
+    <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+    <Setter Property="Background" Value="{DynamicResource Button.BackgroundBrush}" />
+    <Setter Property="CaretBrush" Value="{DynamicResource PrimaryTextBrush}" />
+    <Setter Property="SelectionBrush" Value="{DynamicResource PrimaryBrush}" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="TextBox">
+          <Grid>
+            <Border
+              x:Name="Bg"
+              Background="{TemplateBinding Background}"
+              BorderBrush="{TemplateBinding BorderBrush}"
+              BorderThickness="{TemplateBinding BorderThickness}"
+              CornerRadius="{StaticResource Radius.Sm}" />
+            <ScrollViewer
+              x:Name="PART_ContentHost"
+              Margin="{TemplateBinding Padding}"
+              VerticalAlignment="Center"
+              Focusable="False"
+              HorizontalScrollBarVisibility="Hidden"
+              VerticalScrollBarVisibility="Hidden" />
+            <Border
+              x:Name="FocusLine"
+              Height="2"
+              Margin="2,0"
+              VerticalAlignment="Bottom"
+              Background="{DynamicResource PrimaryBrush}"
+              CornerRadius="1"
+              Visibility="Collapsed" />
+          </Grid>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="Bg" Property="Background" Value="{DynamicResource Button.HoverBrush}" />
+            </Trigger>
+            <Trigger Property="IsKeyboardFocused" Value="True">
+              <Setter TargetName="Bg" Property="Background" Value="{DynamicResource Button.HoverBrush}" />
+              <Setter TargetName="FocusLine" Property="Visibility" Value="Visible" />
+            </Trigger>
+            <Trigger Property="IsReadOnly" Value="True">
+              <Setter TargetName="Bg" Property="Background" Value="Transparent" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter TargetName="Bg" Property="Background" Value="Transparent" />
+              <Setter Property="Opacity" Value="0.6" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <!--  O mesmo campo pra número: à direita, como a coluna  -->
+  <Style
+    x:Key="CellField.Number"
+    BasedOn="{StaticResource CellField}"
+    TargetType="TextBox">
+    <Setter Property="HorizontalContentAlignment" Value="Right" />
+  </Style>
+
   <Style BasedOn="{StaticResource {x:Type PasswordBox}}" TargetType="PasswordBox">
     <Setter Property="CaretBrush" Value="{DynamicResource PrimaryTextBrush}" />
     <Setter Property="SelectionBrush" Value="{DynamicResource PrimaryBrush}" />

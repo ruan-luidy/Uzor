@@ -18,6 +18,22 @@ namespace Uzor.Wpf.Behaviors
 
     public static void SetRadius(DependencyObject target, CornerRadius value) => target.SetValue(RadiusProperty, value);
 
+    /// <summary>
+    /// Pílula: o raio é a metade do lado menor, recalculado quando o tamanho muda. É o recorte das barras (o trilho de
+    /// 6, 8 ou 14 px): o preenchimento vai reto por dentro e com valor pequeno vira uma lasca na ponta redonda, em vez
+    /// do canto dele mesmo espremer o retângulo numa elipse.
+    ///   &lt;Grid behaviors:CornerClip.Pill="True"&gt;
+    /// </summary>
+    public static readonly DependencyProperty PillProperty = DependencyProperty.RegisterAttached(
+      "Pill", typeof(bool), typeof(CornerClip), new PropertyMetadata(false, OnRadiusChanged));
+
+    public static bool GetPill(DependencyObject target) => (bool)target.GetValue(PillProperty);
+
+    public static void SetPill(DependencyObject target, bool value) => target.SetValue(PillProperty, value);
+
+    /// <summary>O raio da pílula num tamanho: metade do lado menor.</summary>
+    public static double PillRadius(double width, double height) => Math.Max(0, Math.Min(width, height) / 2);
+
     private static void OnRadiusChanged(DependencyObject target, DependencyPropertyChangedEventArgs e)
     {
       if (target is not FrameworkElement element)
@@ -32,7 +48,9 @@ namespace Uzor.Wpf.Behaviors
 
     private static void Apply(FrameworkElement element)
     {
-      var radius = GetRadius(element);
+      var radius = GetPill(element)
+        ? new CornerRadius(PillRadius(element.ActualWidth, element.ActualHeight))
+        : GetRadius(element);
       if (element.ActualWidth <= 0 || element.ActualHeight <= 0 || radius == new CornerRadius(0))
       {
         element.Clip = null;
