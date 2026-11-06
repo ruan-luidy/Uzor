@@ -540,6 +540,171 @@
   </Style>
 
   <!--
+    A NavTab num TabControl (06/11/2026, Detalhes do pedido): pra tela com abas de conteúdo usar o mesmo visual sem
+    trocar a lógica pra RadioButton. As abas à esquerda, do tamanho do nome; a aberta com o sublinhado de 2 px no
+    destaque; a linha fina embaixo de ponta a ponta. As largas do HandyControl ficam pras abas das janelas.
+      <TabControl Style="{StaticResource Uzor.Tabs}"> <TabItem Header="Itens">...</TabItem> </TabControl>
+  -->
+  <!--
+    Fonte e cor vão no CABEÇALHO (TextElement no ContentPresenter), não no TabItem: o conteúdo da aba herda do TabItem,
+    e o negrito e o cinza do título vazavam pra grade lá dentro.
+  -->
+  <Style x:Key="Uzor.TabItem" TargetType="TabItem">
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="TabItem">
+          <Grid Height="34" Background="Transparent">
+            <ContentPresenter
+              x:Name="Title"
+              Margin="12,0"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center"
+              ContentSource="Header"
+              RecognizesAccessKey="True"
+              TextElement.FontSize="{StaticResource FontSize.Body}"
+              TextElement.FontWeight="SemiBold"
+              TextElement.Foreground="{DynamicResource SecondaryTextBrush}" />
+            <Border
+              x:Name="Underline"
+              Height="2"
+              Margin="6,0"
+              VerticalAlignment="Bottom"
+              Background="{DynamicResource PrimaryBrush}"
+              CornerRadius="1"
+              Visibility="Hidden" />
+          </Grid>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="Title" Property="TextElement.Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+            </Trigger>
+            <Trigger Property="IsSelected" Value="True">
+              <Setter TargetName="Title" Property="TextElement.Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+              <Setter TargetName="Underline" Property="Visibility" Value="Visible" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter Property="Opacity" Value="0.4" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <Style x:Key="Uzor.Tabs" TargetType="TabControl">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="ItemContainerStyle" Value="{StaticResource Uzor.TabItem}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="TabControl">
+          <Grid KeyboardNavigation.TabNavigation="Local">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Border
+              Padding="4,0"
+              BorderBrush="{DynamicResource Divider.Brush}"
+              BorderThickness="0,0,0,1">
+              <TabPanel
+                x:Name="HeaderPanel"
+                Panel.ZIndex="1"
+                IsItemsHost="True"
+                KeyboardNavigation.TabIndex="1" />
+            </Border>
+            <ContentPresenter
+              x:Name="PART_SelectedContentHost"
+              Grid.Row="1"
+              Margin="{TemplateBinding Padding}"
+              ContentSource="SelectedContent" />
+          </Grid>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!--
+    Abas segmentadas (06/11/2026, o Painel Admin dentro dos Detalhes do pedido: "tab dentro de tab"): pra trocar de
+    visão DENTRO de uma aba, o seletor do OptionGroup (o do Windfinder) - segmentos lado a lado com 1 px de folga, o
+    escolhido no azul cheio com o texto branco, o grupo com cantos de 4. Só a aba escolhida é medida (não é o Sliding).
+      <TabControl Style="{StaticResource Uzor.SegmentedTabs}"> <TabItem Header="Resumo">...</TabItem> </TabControl>
+  -->
+  <Style x:Key="Uzor.SegmentTabItem" TargetType="TabItem">
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+    <Setter Property="Margin" Value="0,0,1,0" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="TabItem">
+          <Border
+            x:Name="Segment"
+            Height="{StaticResource Control.Height}"
+            MinWidth="96"
+            Padding="14,0"
+            Background="{DynamicResource Button.BackgroundBrush}">
+            <ContentPresenter
+              x:Name="Title"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center"
+              ContentSource="Header"
+              RecognizesAccessKey="True"
+              TextElement.FontSize="{StaticResource FontSize.Body}"
+              TextElement.Foreground="{DynamicResource PrimaryTextBrush}" />
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="Segment" Property="Background" Value="{DynamicResource Button.HoverBrush}" />
+            </Trigger>
+            <Trigger Property="IsSelected" Value="True">
+              <Setter TargetName="Segment" Property="Background" Value="{DynamicResource PrimaryBrush}" />
+              <Setter TargetName="Title" Property="TextElement.Foreground" Value="White" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter Property="Opacity" Value="0.4" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <Style x:Key="Uzor.SegmentedTabs" TargetType="TabControl">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="ItemContainerStyle" Value="{StaticResource Uzor.SegmentTabItem}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="TabControl">
+          <Grid KeyboardNavigation.TabNavigation="Local">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <StackPanel
+              x:Name="HeaderPanel"
+              Margin="0,0,0,10"
+              HorizontalAlignment="Left"
+              behaviors:CornerClip.Radius="{StaticResource Radius.Sm}"
+              IsItemsHost="True"
+              KeyboardNavigation.TabIndex="1"
+              Orientation="Horizontal"
+              UseLayoutRounding="True" />
+            <ContentPresenter
+              x:Name="PART_SelectedContentHost"
+              Grid.Row="1"
+              Margin="{TemplateBinding Padding}"
+              ContentSource="SelectedContent" />
+          </Grid>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!--
     ========================================
     LISTA SELECIONÁVEL (lista + detalhe)
     ========================================
