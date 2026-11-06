@@ -688,8 +688,10 @@
               TextElement.Foreground="{DynamicResource PrimaryTextBrush}" />
           </Border>
           <ControlTemplate.Triggers>
+            <!--  O mouse do OptionGroup: fundo mais claro e o texto no azul (o escolhido segue branco, gatilho abaixo)  -->
             <Trigger Property="IsMouseOver" Value="True">
               <Setter TargetName="Segment" Property="Background" Value="{DynamicResource Button.HoverBrush}" />
+              <Setter TargetName="Title" Property="TextElement.Foreground" Value="{DynamicResource PrimaryBrush}" />
             </Trigger>
             <Trigger Property="IsSelected" Value="True">
               <Setter TargetName="Segment" Property="Background" Value="{DynamicResource PrimaryBrush}" />

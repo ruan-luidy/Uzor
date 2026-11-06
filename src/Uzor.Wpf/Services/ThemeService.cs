@@ -88,8 +88,8 @@ namespace Uzor.Wpf.Services
       SetBrush("Success.TextBrush", dark ? Color.FromRgb(0x3D, 0xCB, 0x5E) : Color.FromRgb(0x1E, 0x8C, 0x3A));
       SetBrush("Accent.TextBrush", dark ? Color.FromRgb(0x6F, 0xA3, 0xDC) : Color.FromRgb(0x2F, 0x6A, 0xAA));
       SetBrush("Info.TextBrush", dark ? Color.FromRgb(0x3B, 0xC9, 0xDB) : Color.FromRgb(0x00, 0x83, 0x8F));
-      // O âmbar do claro é dourado (06/11/2026): o 9A6B00, escuro e puxando pro verde, lia como oliva no cinza dos cartões ("cor meio de merda"); B87300 ainda passa de 3:1 no cinza
-      SetBrush("Warning.TextBrush", dark ? Color.FromRgb(0xE9, 0xAF, 0x20) : Color.FromRgb(0xB8, 0x73, 0x00));
+      // O âmbar do claro é o vivo (06/11/2026): os escuros (9A6B00, A65E00, B87300) liam como marrom/oliva no cinza dos cartões ("cor feia"); D97706 é o âmbar 600, mais claro e sem tom de terra
+      SetBrush("Warning.TextBrush", dark ? Color.FromRgb(0xE9, 0xAF, 0x20) : Color.FromRgb(0xD9, 0x77, 0x06));
       SetBrush("Danger.TextBrush", dark ? Color.FromRgb(0xE5, 0x52, 0x5E) : Color.FromRgb(0xC2, 0x29, 0x35));
       SetBrush("Orange.TextBrush", dark ? Color.FromRgb(0xFF, 0x8A, 0x5C) : Color.FromRgb(0xC2, 0x4A, 0x10));
       SetBrush("Purple.TextBrush", dark ? Color.FromRgb(0xC7, 0x7D, 0xDB) : Color.FromRgb(0x7B, 0x2A, 0x92));
