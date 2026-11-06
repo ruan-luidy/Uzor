@@ -248,6 +248,11 @@
     TargetType="hc:ButtonGroup">
     <Setter Property="ItemContainerStyleSelector" Value="{StaticResource OptionGroupItemStyle}" />
     <Setter Property="UseLayoutRounding" Value="True" />
+    <!--
+      As pontas arredondadas pelo recorte do grupo inteiro (06/11/2026, "ficou um pedaço quadrado"): o estilo de
+      primeiro/último do HandyControl nem sempre chega no segmento, e as pontas saíam quadradas.
+    -->
+    <Setter Property="behaviors:CornerClip.Radius" Value="{StaticResource Radius.Sm}" />
     <Setter Property="ItemsPanel">
       <Setter.Value>
         <ItemsPanelTemplate>
