@@ -200,34 +200,13 @@
           </Button>
         </Grid>
 
-        <!--  A ação (Reiniciar...) embaixo da mensagem, alinhada com o texto; sem faixa de outra cor  -->
-        <Border
-          x:Name="ActionsBar"
-          Grid.Row="1"
-          Padding="60,0,12,12"
-          Visibility="Collapsed">
-          <Button
-            x:Name="ActionButton"
-            Height="28"
-            MinWidth="88"
-            Padding="14,0"
-            HorizontalAlignment="Left"
-            Click="Action_Click"
-            Cursor="Hand">
-            <TextBlock
-              x:Name="ActionText"
-              FontSize="{StaticResource FontSize.Sm}"
-              FontWeight="Medium" />
-          </Button>
-        </Border>
-
         <!--
-          O tempo que falta, numa linha fina no pé do cartão que vai encolhendo. Ela É o relógio do toast: para com o
+          O tempo que falta, numa linha fina no pé do texto que vai encolhendo. Ela É o relógio do toast: para com o
           mouse em cima e volta quando ele sai, e quem lê vê que dá pra segurar o aviso.
         -->
         <Border
           x:Name="LifeTrack"
-          Grid.Row="2"
+          Grid.Row="1"
           Height="2"
           Margin="14,0,14,2"
           Visibility="Collapsed">
@@ -241,6 +220,34 @@
               <ScaleTransform ScaleX="1" />
             </Border.RenderTransform>
           </Border>
+        </Border>
+
+        <!--
+          A ação (Reiniciar...) no rodapé do diálogo do Uzor (DialogFooter): faixa um degrau mais escura, linha fina em
+          cima e o botão na direita. Os pincéis vão direto (e não o estilo) pra o toast não depender do Dialogs.xaml.
+        -->
+        <Border
+          x:Name="ActionsBar"
+          Grid.Row="2"
+          Padding="14,10"
+          Background="{DynamicResource Dialog.FooterBrush}"
+          BorderBrush="{DynamicResource Divider.Brush}"
+          BorderThickness="0,1,0,0"
+          CornerRadius="0,0,11,11"
+          Visibility="Collapsed">
+          <Button
+            x:Name="ActionButton"
+            Height="28"
+            MinWidth="88"
+            Padding="14,0"
+            HorizontalAlignment="Right"
+            Click="Action_Click"
+            Cursor="Hand">
+            <TextBlock
+              x:Name="ActionText"
+              FontSize="{StaticResource FontSize.Sm}"
+              FontWeight="Medium" />
+          </Button>
         </Border>
       </Grid>
     </Border>
