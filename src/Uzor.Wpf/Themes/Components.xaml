@@ -2,6 +2,7 @@
   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:formatting="clr-namespace:Uzor.Wpf"
+  xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
   xmlns:icons="clr-namespace:Uzor.Wpf.Icons">
 
   <!--
@@ -129,6 +130,18 @@
   </Style>
 
   <Style x:Key="Uzor.MenuItem" TargetType="MenuItem">
+    <Style.Resources>
+      <!--
+        O ícone do item é do menu, não da tela (06/11/2026, "a padronização desses símbolos"): o Phosphor em 14 na cor
+        de destaque, todos iguais, como no Windfinder. A tela diz só QUAL ícone (Kind, sempre Bold) - cor ou tamanho
+        escritos no ícone ganhariam deste estilo, e o PadraoDeIconeDoMenuTests barra.
+      -->
+      <Style TargetType="iconPacks:PackIconPhosphorIcons">
+        <Setter Property="Width" Value="14" />
+        <Setter Property="Height" Value="14" />
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}" />
+      </Style>
+    </Style.Resources>
     <Setter Property="MinHeight" Value="30" />
     <Setter Property="Padding" Value="10,0,8,0" />
     <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
