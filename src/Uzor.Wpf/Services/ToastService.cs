@@ -103,6 +103,13 @@ namespace Uzor.Wpf.Services
         _layer = layer;
         layer.Add(_stack);
       }
+      else if (VisualTreeHelper.GetChildrenCount(layer) is var n and > 0 && !ReferenceEquals(VisualTreeHelper.GetChild(layer, n - 1), _stack))
+      {
+        // Um diálogo do HandyControl aberto DEPOIS do primeiro toast entra na mesma camada por cima da pilha, e o
+        // toast saía atrás do fundo escurecido (06/11/2026). Tirar e pôr de volta leva a pilha pro topo da camada.
+        layer.Remove(_stack);
+        layer.Add(_stack);
+      }
 
       return _stack;
     }

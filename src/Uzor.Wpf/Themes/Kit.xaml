@@ -1473,6 +1473,14 @@
       <Setter.Value>
         <ControlTemplate TargetType="TextBox">
           <Grid>
+            <!--
+              O cinza da grade, sólido, embaixo do fundo translúcido (06/11/2026): o campo fica com o mesmo cinza de
+              sempre e a linha selecionada não passa por ele (antes misturava com o azul; branco ficou estranho).
+            -->
+            <Border
+              x:Name="Base"
+              Background="{DynamicResource SecondaryRegionBrush}"
+              CornerRadius="{StaticResource Radius.Sm}" />
             <Border
               x:Name="Bg"
               Background="{TemplateBinding Background}"
@@ -1494,18 +1502,13 @@
             <Trigger Property="IsKeyboardFocused" Value="True">
               <Setter TargetName="Bg" Property="Background" Value="{DynamicResource Button.HoverBrush}" />
             </Trigger>
-            <!--
-              Na linha selecionada o fundo translúcido misturava com o azul e virava uma caixa cinza-azulada, como se a
-              seleção passasse por cima do campo (06/11/2026). Ali o campo ganha o fundo sólido da tela: continua campo.
-            -->
-            <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
-              <Setter TargetName="Bg" Property="Background" Value="{DynamicResource RegionBrush}" />
-            </DataTrigger>
             <Trigger Property="IsReadOnly" Value="True">
               <Setter TargetName="Bg" Property="Background" Value="Transparent" />
+              <Setter TargetName="Base" Property="Background" Value="Transparent" />
             </Trigger>
             <Trigger Property="IsEnabled" Value="False">
               <Setter TargetName="Bg" Property="Background" Value="Transparent" />
+              <Setter TargetName="Base" Property="Background" Value="Transparent" />
               <Setter Property="Opacity" Value="0.6" />
             </Trigger>
           </ControlTemplate.Triggers>
