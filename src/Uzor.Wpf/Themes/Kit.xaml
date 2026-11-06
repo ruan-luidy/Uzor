@@ -751,6 +751,52 @@
     ListBox sem moldura dentro de um SurfaceCard; a linha tem raio 6, hover cinza e a selecionada ganha o fundo da
     página com a barrinha azul (o item ativo do painel lateral).
   -->
+  <!--  A linha do PlainListBox, com nome: a tela que precisa ligar o ListRow.IsEditing faz BasedOn nela  -->
+  <Style x:Key="Uzor.PlainListItem" TargetType="ListBoxItem">
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+    <Setter Property="Margin" Value="0,0,0,2" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ListBoxItem">
+          <Grid>
+            <Border
+              x:Name="Row"
+              Padding="12,8"
+              Background="Transparent"
+              CornerRadius="{StaticResource Radius.Md}">
+              <ContentPresenter />
+            </Border>
+            <Border
+              x:Name="Bar"
+              Width="3"
+              Height="16"
+              HorizontalAlignment="Left"
+              Background="{DynamicResource PrimaryBrush}"
+              CornerRadius="2"
+              Visibility="Collapsed" />
+          </Grid>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="Row" Property="Background" Value="{DynamicResource Hover.RowBrush}" />
+            </Trigger>
+            <Trigger Property="IsSelected" Value="True">
+              <Setter TargetName="Row" Property="Background" Value="{DynamicResource Nav.SelectedBrush}" />
+              <Setter TargetName="Bar" Property="Visibility" Value="Visible" />
+            </Trigger>
+            <!--  A linha virou editor: fundo da escolhida, sem a barrinha e sem a mãozinha  -->
+            <Trigger Property="controls:ListRow.IsEditing" Value="True">
+              <Setter TargetName="Row" Property="Background" Value="{DynamicResource Nav.SelectedBrush}" />
+              <Setter TargetName="Bar" Property="Visibility" Value="Collapsed" />
+              <Setter Property="Cursor" Value="Arrow" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
   <Style x:Key="PlainListBox" TargetType="ListBox">
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="BorderThickness" Value="0" />
@@ -768,40 +814,146 @@
         </ControlTemplate>
       </Setter.Value>
     </Setter>
+    <Setter Property="ItemContainerStyle" Value="{StaticResource Uzor.PlainListItem}" />
+  </Style>
+
+  <!--
+    ========================================
+    LISTA + ATRIBUIÇÃO (o padrão dos cadastros: grupos de horas, siglas, máquinas, turnos, operadores)
+    ========================================
+    A lista da esquerda é o PlainListBox num cartão. A linha tem a cor, o nome, o resumo embaixo e, no fim, o número
+    que conta (RowMeta). No mouse o número dá lugar às ações da linha (RowActions): editar e excluir ali mesmo, sem a
+    barra de botões embaixo da lista. Os dois ficam na mesma célula e só um aparece (Hidden, não Collapsed): a coluna
+    não muda de largura e o nome não pula quando o mouse passa.
+  -->
+  <Style x:Key="Uzor.RowAction" TargetType="Button">
+    <Setter Property="Width" Value="24" />
+    <Setter Property="Height" Value="24" />
+    <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Button">
+          <Border
+            x:Name="Bg"
+            Background="Transparent"
+            CornerRadius="{StaticResource Radius.Sm}">
+            <Path
+              Width="13"
+              Height="13"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center"
+              Data="{TemplateBinding Tag}"
+              Fill="{TemplateBinding Foreground}"
+              Stretch="Uniform" />
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="Bg" Property="Background" Value="{DynamicResource Button.HoverBrush}" />
+              <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+              <Setter TargetName="Bg" Property="Opacity" Value="0.8" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!--  A de excluir fica vermelha no mouse: o aviso antes do clique  -->
+  <Style
+    x:Key="Uzor.RowAction.Danger"
+    BasedOn="{StaticResource Uzor.RowAction}"
+    TargetType="Button">
+    <Style.Triggers>
+      <Trigger Property="IsMouseOver" Value="True">
+        <Setter Property="Foreground" Value="{DynamicResource Danger.TextBrush}" />
+      </Trigger>
+    </Style.Triggers>
+  </Style>
+
+  <Style x:Key="Uzor.RowActions" TargetType="StackPanel">
+    <Setter Property="Orientation" Value="Horizontal" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="HorizontalAlignment" Value="Right" />
+    <Setter Property="Visibility" Value="Hidden" />
+    <Style.Triggers>
+      <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
+        <Setter Property="Visibility" Value="Visible" />
+      </DataTrigger>
+    </Style.Triggers>
+  </Style>
+
+  <Style x:Key="Uzor.RowMeta" TargetType="TextBlock">
+    <Setter Property="Margin" Value="8,0,0,0" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="HorizontalAlignment" Value="Right" />
+    <Setter Property="FontSize" Value="{StaticResource FontSize.Sm}" />
+    <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
+    <Style.Triggers>
+      <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
+        <Setter Property="Visibility" Value="Hidden" />
+      </DataTrigger>
+    </Style.Triggers>
+  </Style>
+
+  <!--
+    A cor de um item (o grupo de horas, a máquina): bolinhas lado a lado, a escolhida com o anel. ItemsSource são os
+    textos "#rrggbb" e o SelectedItem é a cor escolhida - o WPF converte o texto em pincel sozinho.
+  -->
+  <Style x:Key="Uzor.ColorSwatches" TargetType="ListBox">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+    <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Disabled" />
+    <Setter Property="ItemsPanel">
+      <Setter.Value>
+        <ItemsPanelTemplate>
+          <WrapPanel Orientation="Horizontal" />
+        </ItemsPanelTemplate>
+      </Setter.Value>
+    </Setter>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ListBox">
+          <ItemsPresenter />
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
     <Setter Property="ItemContainerStyle">
       <Setter.Value>
         <Style TargetType="ListBoxItem">
+          <Setter Property="Margin" Value="0,0,4,0" />
           <Setter Property="Cursor" Value="Hand" />
           <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-          <Setter Property="Margin" Value="0,0,0,2" />
-          <Setter Property="HorizontalContentAlignment" Value="Stretch" />
           <Setter Property="Template">
             <Setter.Value>
               <ControlTemplate TargetType="ListBoxItem">
-                <Grid>
-                  <Border
-                    x:Name="Row"
-                    Padding="12,8"
-                    Background="Transparent"
-                    CornerRadius="{StaticResource Radius.Md}">
-                    <ContentPresenter />
-                  </Border>
-                  <Border
-                    x:Name="Bar"
-                    Width="3"
-                    Height="16"
-                    HorizontalAlignment="Left"
-                    Background="{DynamicResource PrimaryBrush}"
-                    CornerRadius="2"
-                    Visibility="Collapsed" />
+                <Grid
+                  Width="22"
+                  Height="22"
+                  Background="Transparent">
+                  <Ellipse
+                    x:Name="Ring"
+                    Stroke="{DynamicResource PrimaryTextBrush}"
+                    StrokeThickness="2"
+                    Visibility="Hidden" />
+                  <Ellipse
+                    x:Name="Dot"
+                    Margin="4"
+                    Fill="{Binding}" />
                 </Grid>
                 <ControlTemplate.Triggers>
                   <Trigger Property="IsMouseOver" Value="True">
-                    <Setter TargetName="Row" Property="Background" Value="{DynamicResource Hover.RowBrush}" />
+                    <Setter TargetName="Dot" Property="Margin" Value="3" />
                   </Trigger>
                   <Trigger Property="IsSelected" Value="True">
-                    <Setter TargetName="Row" Property="Background" Value="{DynamicResource Nav.SelectedBrush}" />
-                    <Setter TargetName="Bar" Property="Visibility" Value="Visible" />
+                    <Setter TargetName="Ring" Property="Visibility" Value="Visible" />
                   </Trigger>
                 </ControlTemplate.Triggers>
               </ControlTemplate>
