@@ -78,6 +78,8 @@ namespace Uzor.Wpf.Services
 
       // O que flutua (menu, calendário, diálogo, gaveta, tooltip): o cinza do menu do Windows 11 em cada tema
       SetBrush("Flyout.BackgroundBrush", dark ? Color.FromRgb(0x2B, 0x2B, 0x2E) : Color.FromRgb(0xFB, 0xFB, 0xFC));
+      // O diálogo no escuro um degrau abaixo dos menus: no 2B2B2E os cartões e as grades (2D2D30) sumiam dentro dele
+      SetBrush("Dialog.BackgroundBrush", dark ? Color.FromRgb(0x1F, 0x1F, 0x22) : Color.FromRgb(0xFB, 0xFB, 0xFC));
       SetBrush("Flyout.BorderBrush", ink, dark ? 0.12 : 0.1);
       SetBrush("Dialog.FooterBrush", Colors.Black, dark ? 0.2 : 0.035);
       SetBrush("Overlay.VeilBrush", dark ? Colors.Black : Colors.White, dark ? 0.35 : 0.55);

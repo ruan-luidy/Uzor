@@ -12,6 +12,13 @@
     linha fina em cima. Nada de faixa cinza no cabeçalho nem do corpo mais escuro que o resto.
   -->
 
+  <!--
+    O fundo do diálogo (06/11/2026, "no modo escuro tá foda de ver os cards e o datagrid"): no claro é o dos menus; no
+    escuro desce um degrau, porque o dos menus (2B2B2E) e o cinza dos cartões e grades (2D2D30) eram quase iguais e
+    tudo se misturava. O ThemeService troca por tema; este é o do escuro, pra quem não chama o ThemeService.
+  -->
+  <SolidColorBrush x:Key="Dialog.BackgroundBrush" Color="#1F1F22" />
+
   <!--  O rodapé: o cartão com um véu escuro por cima (um degrau abaixo, como o do diálogo do Windows)  -->
   <SolidColorBrush x:Key="Dialog.FooterBrush" Color="#33000000" />
 
@@ -26,14 +33,14 @@
 
   <!--  O cartão: fundo dos menus, borda de luz fraca, raio grande  -->
   <Style x:Key="DialogCard" TargetType="Border">
-    <Setter Property="Background" Value="{DynamicResource Flyout.BackgroundBrush}" />
+    <Setter Property="Background" Value="{DynamicResource Dialog.BackgroundBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource Flyout.BorderBrush}" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="CornerRadius" Value="{StaticResource Radius.XL}" />
   </Style>
 
   <Style x:Key="DialogShadow" TargetType="Border">
-    <Setter Property="Background" Value="{DynamicResource Flyout.BackgroundBrush}" />
+    <Setter Property="Background" Value="{DynamicResource Dialog.BackgroundBrush}" />
     <Setter Property="CornerRadius" Value="{StaticResource Radius.XL}" />
     <Setter Property="Effect" Value="{StaticResource Shadow.Dialog}" />
   </Style>
