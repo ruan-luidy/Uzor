@@ -966,6 +966,148 @@
 
   <!--
     ========================================
+    ETAPAS (as do pacote no Handoff)
+    ========================================
+    A bolinha ligada pela linha. O item traz Label e, se quiser, Number (o 10 da operação), Detail (a linha de baixo),
+    Tag (o selo no fim), IsDone (bolinha cheia e linha azul até a próxima), IsCurrent (o nome em negrito) e IsLast (sem
+    linha depois). Uzor.Timeline é em pé (o roteiro, uma etapa por linha); Uzor.Stepper é deitado (os passos de um
+    fluxo, como no Handoff).
+  -->
+  <DataTemplate x:Key="Uzor.TimelineItem">
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="14" />
+        <ColumnDefinition Width="*" />
+      </Grid.ColumnDefinitions>
+      <Rectangle
+        x:Name="Line"
+        Width="2"
+        Margin="0,15,0,-3"
+        HorizontalAlignment="Center"
+        Fill="{DynamicResource BorderBrush}" />
+      <Ellipse
+        x:Name="Dot"
+        Width="12"
+        Height="12"
+        Margin="0,3,0,0"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Top"
+        Fill="{DynamicResource RegionBrush}"
+        Stroke="{DynamicResource PrimaryBrush}"
+        StrokeThickness="2" />
+      <DockPanel Grid.Column="1" Margin="10,0,0,14">
+        <TextBlock
+          x:Name="TagText"
+          Margin="8,1,0,0"
+          VerticalAlignment="Top"
+          DockPanel.Dock="Right"
+          FontSize="{StaticResource FontSize.Sm}"
+          Foreground="{DynamicResource SecondaryTextBrush}"
+          Text="{Binding Tag}" />
+        <StackPanel>
+          <TextBlock
+            x:Name="Label"
+            FontSize="{StaticResource FontSize.Body}"
+            Foreground="{DynamicResource PrimaryTextBrush}"
+            TextTrimming="CharacterEllipsis">
+            <Run
+              x:Name="Number"
+              Foreground="{DynamicResource SecondaryTextBrush}"
+              Text="{Binding Number, Mode=OneWay}" />
+            <Run Text="{Binding Label, Mode=OneWay}" />
+          </TextBlock>
+          <TextBlock
+            x:Name="Detail"
+            Margin="0,2,0,0"
+            FontSize="{StaticResource FontSize.Sm}"
+            Foreground="{DynamicResource SecondaryTextBrush}"
+            Text="{Binding Detail}"
+            TextWrapping="Wrap" />
+        </StackPanel>
+      </DockPanel>
+    </Grid>
+    <DataTemplate.Triggers>
+      <DataTrigger Binding="{Binding IsDone}" Value="True">
+        <Setter TargetName="Dot" Property="Fill" Value="{DynamicResource PrimaryBrush}" />
+        <Setter TargetName="Line" Property="Fill" Value="{DynamicResource PrimaryBrush}" />
+      </DataTrigger>
+      <DataTrigger Binding="{Binding IsCurrent}" Value="True">
+        <Setter TargetName="Label" Property="FontWeight" Value="SemiBold" />
+      </DataTrigger>
+      <DataTrigger Binding="{Binding IsLast}" Value="True">
+        <Setter TargetName="Line" Property="Visibility" Value="Hidden" />
+      </DataTrigger>
+      <DataTrigger Binding="{Binding Detail}" Value="">
+        <Setter TargetName="Detail" Property="Visibility" Value="Collapsed" />
+      </DataTrigger>
+      <DataTrigger Binding="{Binding Detail}" Value="{x:Null}">
+        <Setter TargetName="Detail" Property="Visibility" Value="Collapsed" />
+      </DataTrigger>
+    </DataTemplate.Triggers>
+  </DataTemplate>
+
+  <Style x:Key="Uzor.Timeline" TargetType="ItemsControl">
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="ItemTemplate" Value="{StaticResource Uzor.TimelineItem}" />
+  </Style>
+
+  <DataTemplate x:Key="Uzor.StepperItem">
+    <StackPanel>
+      <Grid Height="14">
+        <Rectangle
+          x:Name="Line"
+          Height="2"
+          Margin="14,0,0,0"
+          Fill="{DynamicResource BorderBrush}" />
+        <Ellipse
+          x:Name="Dot"
+          Width="12"
+          Height="12"
+          HorizontalAlignment="Left"
+          Fill="{DynamicResource RegionBrush}"
+          Stroke="{DynamicResource SecondaryBorderBrush}"
+          StrokeThickness="2" />
+      </Grid>
+      <TextBlock
+        x:Name="Label"
+        Margin="0,6,8,0"
+        FontSize="{StaticResource FontSize.Sm}"
+        Foreground="{DynamicResource SecondaryTextBrush}"
+        Text="{Binding Label}"
+        TextWrapping="Wrap" />
+    </StackPanel>
+    <DataTemplate.Triggers>
+      <DataTrigger Binding="{Binding IsDone}" Value="True">
+        <Setter TargetName="Dot" Property="Fill" Value="{DynamicResource PrimaryBrush}" />
+        <Setter TargetName="Dot" Property="Stroke" Value="{DynamicResource PrimaryBrush}" />
+        <Setter TargetName="Line" Property="Fill" Value="{DynamicResource PrimaryBrush}" />
+      </DataTrigger>
+      <DataTrigger Binding="{Binding IsCurrent}" Value="True">
+        <Setter TargetName="Dot" Property="Stroke" Value="{DynamicResource PrimaryBrush}" />
+        <Setter TargetName="Label" Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+        <Setter TargetName="Label" Property="FontWeight" Value="SemiBold" />
+        <Setter TargetName="Line" Property="Fill" Value="{DynamicResource BorderBrush}" />
+      </DataTrigger>
+      <DataTrigger Binding="{Binding IsLast}" Value="True">
+        <Setter TargetName="Line" Property="Visibility" Value="Hidden" />
+      </DataTrigger>
+    </DataTemplate.Triggers>
+  </DataTemplate>
+
+  <Style x:Key="Uzor.Stepper" TargetType="ItemsControl">
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="ItemTemplate" Value="{StaticResource Uzor.StepperItem}" />
+    <Setter Property="ItemsPanel">
+      <Setter.Value>
+        <ItemsPanelTemplate>
+          <UniformGrid Rows="1" />
+        </ItemsPanelTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!--
+    ========================================
     GRUPO EXPANSÍVEL (o cabeçalho de grupo da tabela agrupada)
     ========================================
   -->
@@ -1352,6 +1494,13 @@
             <Trigger Property="IsKeyboardFocused" Value="True">
               <Setter TargetName="Bg" Property="Background" Value="{DynamicResource Button.HoverBrush}" />
             </Trigger>
+            <!--
+              Na linha selecionada o fundo translúcido misturava com o azul e virava uma caixa cinza-azulada, como se a
+              seleção passasse por cima do campo (06/11/2026). Ali o campo ganha o fundo sólido da tela: continua campo.
+            -->
+            <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+              <Setter TargetName="Bg" Property="Background" Value="{DynamicResource RegionBrush}" />
+            </DataTrigger>
             <Trigger Property="IsReadOnly" Value="True">
               <Setter TargetName="Bg" Property="Background" Value="Transparent" />
             </Trigger>
