@@ -107,10 +107,150 @@
   </Style>
 
   <!--
-    Menu de contexto: o ContextMenu.Small do HandyControl (o que o rnzNegativeObserver usa em todo menu de botão
-    direito), entrando crescendo de 96%. Implícito, então vale até pro menu de copiar/colar dos campos.
+    Menu de contexto no jeito do menu do Windows 11 (06/11/2026): cartão no cinza dos flutuantes (Flyout.BackgroundBrush)
+    com a borda fraca e a sombra, itens de 30 com o realce arredondado, ícone de 16 numa coluna própria (alinhado mesmo
+    em item sem ícone), atalho em cinza, seta de submenu e o separador fino no tom da divisória. O do HandyControl
+    (ContextMenu.Small) tinha o separador numa linha branca forte e o realce sumindo no cinza do menu escuro. A chave
+    ContextMenu.Small passa a ser este (o Negativo pede ela pelo nome em 61 menus) e o implícito também, então vale até
+    pro menu de copiar/colar dos campos.
   -->
-  <Style BasedOn="{StaticResource ContextMenu.Small}" TargetType="ContextMenu">
+  <Style x:Key="Uzor.MenuSeparator" TargetType="Separator">
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Separator">
+          <Border
+            Height="1"
+            Margin="10,4"
+            Background="{DynamicResource Divider.Brush}" />
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <Style x:Key="Uzor.MenuItem" TargetType="MenuItem">
+    <Setter Property="MinHeight" Value="30" />
+    <Setter Property="Padding" Value="10,0,8,0" />
+    <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+    <Setter Property="FontSize" Value="{StaticResource FontSize.Body}" />
+    <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="MenuItem">
+          <Grid SnapsToDevicePixels="True">
+            <Border
+              x:Name="Bg"
+              Background="Transparent"
+              CornerRadius="{StaticResource Radius.Md}" />
+            <Grid Margin="{TemplateBinding Padding}">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" SharedSizeGroup="MenuGesture" />
+                <ColumnDefinition Width="14" />
+              </Grid.ColumnDefinitions>
+              <ContentPresenter
+                x:Name="IconHost"
+                Width="16"
+                Height="16"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                ContentSource="Icon" />
+              <Path
+                x:Name="CheckMark"
+                Width="11"
+                Height="11"
+                VerticalAlignment="Center"
+                Data="{icons:Phosphor CheckBold}"
+                Fill="{DynamicResource PrimaryBrush}"
+                Stretch="Uniform"
+                Visibility="Collapsed" />
+              <ContentPresenter
+                Grid.Column="1"
+                Margin="10,0,0,0"
+                VerticalAlignment="Center"
+                ContentSource="Header"
+                RecognizesAccessKey="True" />
+              <TextBlock
+                Grid.Column="2"
+                Margin="24,0,0,0"
+                VerticalAlignment="Center"
+                FontSize="{StaticResource FontSize.Sm}"
+                Foreground="{DynamicResource MutedTextBrush}"
+                Text="{TemplateBinding InputGestureText}" />
+              <Path
+                x:Name="SubmenuArrow"
+                Grid.Column="3"
+                Width="8"
+                Height="8"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                Data="{icons:Phosphor CaretRightBold}"
+                Fill="{DynamicResource SecondaryTextBrush}"
+                Stretch="Uniform"
+                Visibility="Collapsed" />
+            </Grid>
+            <!--  O submenu: o mesmo cartão, encostado à direita do item  -->
+            <Popup
+              x:Name="PART_Popup"
+              AllowsTransparency="True"
+              Focusable="False"
+              HorizontalOffset="-6"
+              IsOpen="{Binding IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}}"
+              Placement="Right"
+              PopupAnimation="Fade"
+              VerticalOffset="-10">
+              <Grid Margin="6,6,10,14">
+                <Border
+                  Background="{DynamicResource Flyout.BackgroundBrush}"
+                  CornerRadius="{StaticResource Radius.Lg}"
+                  Effect="{DynamicResource Shadow.Card}" />
+                <Border
+                  MinWidth="180"
+                  Padding="4"
+                  Background="{DynamicResource Flyout.BackgroundBrush}"
+                  BorderBrush="{DynamicResource Flyout.BorderBrush}"
+                  BorderThickness="1"
+                  CornerRadius="{StaticResource Radius.Lg}">
+                  <ItemsPresenter Grid.IsSharedSizeScope="True" KeyboardNavigation.DirectionalNavigation="Cycle" />
+                </Border>
+              </Grid>
+            </Popup>
+          </Grid>
+          <ControlTemplate.Triggers>
+            <Trigger Property="Role" Value="SubmenuHeader">
+              <Setter TargetName="SubmenuArrow" Property="Visibility" Value="Visible" />
+            </Trigger>
+            <Trigger Property="IsHighlighted" Value="True">
+              <Setter TargetName="Bg" Property="Background" Value="{DynamicResource Hover.RowBrush}" />
+            </Trigger>
+            <Trigger Property="IsSubmenuOpen" Value="True">
+              <Setter TargetName="Bg" Property="Background" Value="{DynamicResource Hover.RowBrush}" />
+            </Trigger>
+            <MultiTrigger>
+              <MultiTrigger.Conditions>
+                <Condition Property="IsChecked" Value="True" />
+                <Condition Property="Icon" Value="{x:Null}" />
+              </MultiTrigger.Conditions>
+              <Setter TargetName="CheckMark" Property="Visibility" Value="Visible" />
+            </MultiTrigger>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter Property="Opacity" Value="0.4" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <Style x:Key="ContextMenu.Small" TargetType="ContextMenu">
+    <Setter Property="HasDropShadow" Value="False" />
+    <Setter Property="MinWidth" Value="200" />
+    <Setter Property="FontFamily" Value="{StaticResource FontFamily.Default}" />
+    <Setter Property="FontSize" Value="{StaticResource FontSize.Body}" />
+    <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+    <Setter Property="Grid.IsSharedSizeScope" Value="True" />
+    <!--  Entra crescendo de 96% (aqui e não no implícito: o Negativo pede a chave pelo nome)  -->
     <Setter Property="RenderTransformOrigin" Value="0.5,0" />
     <Setter Property="Opacity" Value="0" />
     <Setter Property="RenderTransform">
@@ -118,6 +258,35 @@
         <ScaleTransform ScaleX="0.96" ScaleY="0.96" />
       </Setter.Value>
     </Setter>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ContextMenu">
+          <!--  Folga pra sombra não cortar  -->
+          <Grid Margin="10,6,10,14">
+            <Border
+              Background="{DynamicResource Flyout.BackgroundBrush}"
+              CornerRadius="{StaticResource Radius.Lg}"
+              Effect="{DynamicResource Shadow.Card}" />
+            <Border
+              Padding="4"
+              Background="{DynamicResource Flyout.BackgroundBrush}"
+              BorderBrush="{DynamicResource Flyout.BorderBrush}"
+              BorderThickness="1"
+              CornerRadius="{StaticResource Radius.Lg}">
+              <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Cycle" />
+            </Border>
+          </Grid>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+    <Style.Resources>
+      <Style BasedOn="{StaticResource Uzor.MenuSeparator}" TargetType="Separator" />
+      <Style
+        x:Key="{x:Static MenuItem.SeparatorStyleKey}"
+        BasedOn="{StaticResource Uzor.MenuSeparator}"
+        TargetType="Separator" />
+      <Style BasedOn="{StaticResource Uzor.MenuItem}" TargetType="MenuItem" />
+    </Style.Resources>
     <Style.Triggers>
       <EventTrigger RoutedEvent="Loaded">
         <BeginStoryboard>
@@ -147,6 +316,9 @@
       </EventTrigger>
     </Style.Triggers>
   </Style>
+
+  <!--  Todo ContextMenu sem estilo (o de copiar/colar dos campos) é o mesmo  -->
+  <Style BasedOn="{StaticResource ContextMenu.Small}" TargetType="ContextMenu" />
 
   <!--
     Menu do ícone do relógio (o do Otmetka): cartão com sombra, ícone à esquerda, atalho em cinza à direita e

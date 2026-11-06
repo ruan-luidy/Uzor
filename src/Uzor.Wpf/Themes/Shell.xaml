@@ -236,13 +236,25 @@
   </Style>
 
   <!--
-    Opções lado a lado (formatos, filtros): o hc:ButtonGroup do HandyControl com Layout Uniform - todos os segmentos
-    da mesma largura, o primeiro e o último com o raio. O marcado fica cheio de azul, como o resto do app.
+    Opções lado a lado (formatos, filtros, o "como baixar" do Negativo): o hc:ButtonGroup do HandyControl, segmentos da
+    mesma largura, o primeiro e o último com o raio. O jeito do Windfinder: sem contorno, no fundo translúcido dos
+    botões (OptionGroupItemStyleSelector), 1 px de tela entre eles em pixel inteiro (OptionGroupPanel) e sem o
+    pontilhado de foco. O marcado fica cheio de azul, como o resto do app.
   -->
+  <controls:OptionGroupItemStyleSelector x:Key="OptionGroupItemStyle" />
   <Style
     x:Key="OptionGroup"
     BasedOn="{StaticResource ButtonGroupSolid}"
     TargetType="hc:ButtonGroup">
+    <Setter Property="ItemContainerStyleSelector" Value="{StaticResource OptionGroupItemStyle}" />
+    <Setter Property="UseLayoutRounding" Value="True" />
+    <Setter Property="ItemsPanel">
+      <Setter.Value>
+        <ItemsPanelTemplate>
+          <controls:OptionGroupPanel />
+        </ItemsPanelTemplate>
+      </Setter.Value>
+    </Setter>
     <Setter Property="Layout" Value="Uniform" />
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="hc:VisualElement.HighlightBorderBrush" Value="{DynamicResource PrimaryBrush}" />

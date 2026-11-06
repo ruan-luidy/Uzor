@@ -30,7 +30,12 @@
       </Setter.Value>
     </Setter>
     <Setter Property="Background" Value="Transparent" />
-    <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+    <!--
+      A borda clara do Uzor (CheckBox.BorderBrush, por tema) também no estilo por chave, que as grades usam (a coluna de
+      marcar do Baixa de sobras, do ajuste de inventário...): com o BorderBrush do HandyControl (#3F3F46) a caixa sumia
+      na grade cinza do tema escuro.
+    -->
+    <Setter Property="BorderBrush" Value="{DynamicResource CheckBox.BorderBrush}" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="HorizontalAlignment" Value="Center" />
     <Setter Property="VerticalAlignment" Value="Center" />
@@ -142,7 +147,7 @@
               <Setter TargetName="border" Property="Visibility" Value="Collapsed" />
             </Trigger>
             <Trigger Property="IsChecked" Value="false">
-              <Setter TargetName="path" Property="Stroke" Value="{DynamicResource BorderBrush}" />
+              <Setter TargetName="path" Property="Stroke" Value="{DynamicResource CheckBox.BorderBrush}" />
             </Trigger>
             <Trigger Property="IsChecked" Value="{x:Null}">
               <Setter TargetName="indeterminateMark" Property="Opacity" Value="1" />
