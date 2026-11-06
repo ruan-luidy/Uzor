@@ -1154,8 +1154,8 @@
   </Style>
   <!--
     Campo dentro da célula da grade (a Qtd Conferida da Conferência, a quantidade a separar...): o fundo dos campos do
-    Uzor, sem o branco do HandyControl, da altura da linha. No foco a borda de baixo vira o traço do accent, de ponta a
-    ponta e recortada pelos cantos (o campo do Windows 11), sem mexer na altura. A borda é transparente e desenhada: o gatilho de erro da tela (BorderBrush vermelho) e o
+    Uzor, sem o branco do HandyControl, da altura da linha. No foco fica mais claro, como os outros campos do app - sem
+    traço do accent embaixo (06/11/2026: "tá podre essa linha", nem solta nem como borda). A borda é transparente e desenhada: o gatilho de erro da tela (BorderBrush vermelho) e o
     sinal do Dep F continuam aparecendo. Desabilitado (linha já conferida) vira número comum, sem caixinha. Texto à
     esquerda; número no CellField.Number. Por chave: implícito pegaria todo TextBox.
   -->
@@ -1176,8 +1176,7 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="TextBox">
-          <!--  O recorte arredondado faz o traço do foco ser a BORDA de baixo do campo (06/11/2026: solto, com margem, parecia um sublinhado avulso)  -->
-          <Grid behaviors:CornerClip.Radius="{StaticResource Radius.Sm}">
+          <Grid>
             <Border
               x:Name="Bg"
               Background="{TemplateBinding Background}"
@@ -1191,12 +1190,6 @@
               Focusable="False"
               HorizontalScrollBarVisibility="Hidden"
               VerticalScrollBarVisibility="Hidden" />
-            <Border
-              x:Name="FocusLine"
-              Height="2"
-              VerticalAlignment="Bottom"
-              Background="{DynamicResource PrimaryBrush}"
-              Visibility="Collapsed" />
           </Grid>
           <ControlTemplate.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
@@ -1204,7 +1197,6 @@
             </Trigger>
             <Trigger Property="IsKeyboardFocused" Value="True">
               <Setter TargetName="Bg" Property="Background" Value="{DynamicResource Button.HoverBrush}" />
-              <Setter TargetName="FocusLine" Property="Visibility" Value="Visible" />
             </Trigger>
             <Trigger Property="IsReadOnly" Value="True">
               <Setter TargetName="Bg" Property="Background" Value="Transparent" />
