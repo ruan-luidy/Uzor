@@ -1,5 +1,8 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Data;
+using HandyControl.Controls;
 using HandyControl.Tools;
 
 namespace Uzor.Wpf.Controls
@@ -31,6 +34,19 @@ namespace Uzor.Wpf.Controls
       var hover = new Trigger { Property = UIElement.IsMouseOverProperty, Value = true };
       hover.Setters.Add(new Setter(Control.BackgroundProperty, new DynamicResourceExtension("Button.HoverBrush")));
       style.Triggers.Add(hover);
+      // ToggleButton marcado (filtro de várias escolhas, 07/11/2026): o HandyControl pinta o fundo de destaque e deixa o
+      // texto na cor de sempre - no claro, preto no azul. O RadioButton ele pinta; aqui os dois pegam o texto de
+      // destaque do grupo (o branco do OptionGroup).
+      if (typeof(ToggleButton).IsAssignableFrom(baseStyle.TargetType))
+      {
+        var marcado = new Trigger { Property = ToggleButton.IsCheckedProperty, Value = true };
+        marcado.Setters.Add(new Setter(Control.ForegroundProperty, new Binding
+        {
+          Path = new PropertyPath(VisualElement.HighlightForegroundProperty),
+          RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor, typeof(ButtonGroup), 1),
+        }));
+        style.Triggers.Add(marcado);
+      }
       style.Seal();
       Derived[baseStyle] = style;
       return style;
