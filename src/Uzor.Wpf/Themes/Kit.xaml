@@ -829,6 +829,8 @@
   <Style x:Key="Uzor.RowAction" TargetType="Button">
     <Setter Property="Width" Value="24" />
     <Setter Property="Height" Value="24" />
+    <!--  O ícone é a caixa menos o Padding: 24 - 2 x 5,5 = 13  -->
+    <Setter Property="Padding" Value="5.5" />
     <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
     <Setter Property="Cursor" Value="Hand" />
     <Setter Property="FocusVisualStyle" Value="{x:Null}" />
@@ -838,13 +840,10 @@
         <ControlTemplate TargetType="Button">
           <Border
             x:Name="Bg"
+            Padding="{TemplateBinding Padding}"
             Background="Transparent"
             CornerRadius="{StaticResource Radius.Sm}">
             <Path
-              Width="13"
-              Height="13"
-              HorizontalAlignment="Center"
-              VerticalAlignment="Center"
               Data="{TemplateBinding Tag}"
               Fill="{TemplateBinding Foreground}"
               Stretch="Uniform" />
@@ -873,6 +872,19 @@
         <Setter Property="Foreground" Value="{DynamicResource Danger.TextBrush}" />
       </Trigger>
     </Style.Triggers>
+  </Style>
+
+  <!--
+    Na linha da grade (22 de altura) a de 24 passava da linha e a esticava: caixa de 18 com o ícone de 11, o tamanho
+    da seta da árvore
+  -->
+  <Style
+    x:Key="Uzor.RowAction.Sm"
+    BasedOn="{StaticResource Uzor.RowAction}"
+    TargetType="Button">
+    <Setter Property="Width" Value="18" />
+    <Setter Property="Height" Value="18" />
+    <Setter Property="Padding" Value="3.5" />
   </Style>
 
   <Style x:Key="Uzor.RowActions" TargetType="StackPanel">
