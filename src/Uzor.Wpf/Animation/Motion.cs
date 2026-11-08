@@ -105,6 +105,41 @@ namespace Uzor.Wpf.Animation
       scale.BeginAnimation(ScaleTransform.ScaleYProperty, bump);
     }
 
+    /// <summary>
+    /// Abre como menu: de 96% e transparente pro tamanho e a opacidade cheios em 140 ms, crescendo a partir de
+    /// <paramref name="origin"/> (o canto do lado de onde ele abriu). É o menu flutuante que aparece do lado da coisa
+    /// clicada. Quem chama esconde o elemento (<see cref="HideForEntrance"/>) ANTES de ele aparecer, senão ele pisca no
+    /// lugar velho até ser posicionado.
+    /// </summary>
+    public static void PopIn(UIElement element, Point origin)
+    {
+      if (GetQuiet(element))
+      {
+        Settle(element);
+        return;
+      }
+
+      var scale = new ScaleTransform(0.96, 0.96);
+      element.RenderTransformOrigin = origin;
+      element.RenderTransform = scale;
+
+      var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
+      var time = TimeSpan.FromMilliseconds(140);
+      scale.BeginAnimation(ScaleTransform.ScaleXProperty, new DoubleAnimation(0.96, 1, time) { EasingFunction = ease });
+      scale.BeginAnimation(ScaleTransform.ScaleYProperty, new DoubleAnimation(0.96, 1, time) { EasingFunction = ease });
+      element.BeginAnimation(UIElement.OpacityProperty, new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(120)));
+    }
+
+    /// <summary>
+    /// Deixa o elemento invisível pra uma entrada (<see cref="PopIn"/>). Solta a animação anterior: a opacidade que ela
+    /// segurou em 1 passaria por cima do 0, e a segunda abertura piscava de novo.
+    /// </summary>
+    public static void HideForEntrance(UIElement element)
+    {
+      element.BeginAnimation(UIElement.OpacityProperty, null);
+      element.Opacity = 0;
+    }
+
     /// <summary>Entra deslizando de lado (troca de página do painel).</summary>
     public static void SlideIn(UIElement element, double fromX)
     {
