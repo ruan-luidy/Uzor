@@ -658,6 +658,145 @@
   </Style>
 
   <!--
+    Abas de documento (10/11/2026, a casca do Negativo): as telas abertas da janela, numa faixa no topo da tela. A pílula
+    do Uzor.Tabs ("o padrãozinho da tela"), com o ícone em hc:IconElement.Geometry e o X no fim, que aparece na aberta e
+    no mouse (o espaço dele fica reservado, pra aba não pular de largura). O X manda o DocTabs.Close com a aba; quem guarda
+    as abas liga o comando. ShowCloseButton="False" tira o X (a aba fixa, o Início).
+  -->
+  <Style x:Key="Uzor.DocTabItem" TargetType="hc:TabItem">
+    <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+    <Setter Property="Margin" Value="0,0,4,0" />
+    <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="hc:TabItem">
+          <Border
+            x:Name="Pill"
+            Height="30"
+            Padding="10,0,6,0"
+            Background="Transparent"
+            CornerRadius="{StaticResource Radius.Md}"
+            Cursor="Hand">
+            <StackPanel Orientation="Horizontal">
+              <Path
+                x:Name="Icon"
+                Width="14"
+                Height="14"
+                Margin="0,0,8,0"
+                VerticalAlignment="Center"
+                Data="{TemplateBinding hc:IconElement.Geometry}"
+                Fill="{DynamicResource SecondaryTextBrush}"
+                Stretch="Uniform" />
+              <ContentPresenter
+                x:Name="Title"
+                VerticalAlignment="Center"
+                ContentSource="Header"
+                RecognizesAccessKey="True"
+                TextElement.FontSize="{StaticResource FontSize.Body}"
+                TextElement.FontWeight="SemiBold"
+                TextElement.Foreground="{DynamicResource SecondaryTextBrush}" />
+              <Button
+                x:Name="Close"
+                Width="18"
+                Height="18"
+                Margin="6,0,0,0"
+                VerticalAlignment="Center"
+                Command="{x:Static controls:DocTabs.Close}"
+                CommandParameter="{Binding RelativeSource={RelativeSource TemplatedParent}}"
+                Cursor="Hand"
+                Focusable="False"
+                ToolTip="Fechar (clique do meio na aba também fecha)"
+                Visibility="Hidden">
+                <Button.Template>
+                  <ControlTemplate TargetType="Button">
+                    <Border
+                      x:Name="Box"
+                      Background="Transparent"
+                      CornerRadius="{StaticResource Radius.Sm}">
+                      <Path
+                        x:Name="X"
+                        Width="9"
+                        Height="9"
+                        Data="{icons:Phosphor XBold}"
+                        Fill="{DynamicResource SecondaryTextBrush}"
+                        Stretch="Uniform" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                      <Trigger Property="IsMouseOver" Value="True">
+                        <Setter TargetName="Box" Property="Background" Value="{DynamicResource Hover.RowBrush}" />
+                        <Setter TargetName="X" Property="Fill" Value="{DynamicResource PrimaryTextBrush}" />
+                      </Trigger>
+                    </ControlTemplate.Triggers>
+                  </ControlTemplate>
+                </Button.Template>
+              </Button>
+            </StackPanel>
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="hc:IconElement.Geometry" Value="{x:Null}">
+              <Setter TargetName="Icon" Property="Visibility" Value="Collapsed" />
+            </Trigger>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="Pill" Property="Background" Value="{DynamicResource Hover.RowBrush}" />
+              <Setter TargetName="Title" Property="TextElement.Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+              <Setter TargetName="Icon" Property="Fill" Value="{DynamicResource PrimaryTextBrush}" />
+              <Setter TargetName="Close" Property="Visibility" Value="Visible" />
+            </Trigger>
+            <Trigger Property="IsSelected" Value="True">
+              <Setter TargetName="Pill" Property="Background" Value="{DynamicResource Nav.SelectedBrush}" />
+              <Setter TargetName="Title" Property="TextElement.Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+              <Setter TargetName="Icon" Property="Fill" Value="{DynamicResource PrimaryTextBrush}" />
+              <Setter TargetName="Close" Property="Visibility" Value="Visible" />
+            </Trigger>
+            <!--  Depois dos outros: a aba fixa nunca mostra o X, nem no mouse  -->
+            <Trigger Property="ShowCloseButton" Value="False">
+              <Setter TargetName="Close" Property="Visibility" Value="Collapsed" />
+              <Setter TargetName="Pill" Property="Padding" Value="10,0,12,0" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <Style x:Key="Uzor.DocTabs" TargetType="TabControl">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="ItemContainerStyle" Value="{StaticResource Uzor.DocTabItem}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="TabControl">
+          <DockPanel KeyboardNavigation.TabNavigation="Local">
+            <!--  A faixa das abas, com a divisória fina embaixo; rola de lado com a roda quando não cabe  -->
+            <Border
+              Padding="12,8"
+              BorderBrush="{DynamicResource Divider.Brush}"
+              BorderThickness="0,0,0,1"
+              DockPanel.Dock="Top">
+              <ScrollViewer
+                controls:DocTabs.WheelScrolls="True"
+                Focusable="False"
+                HorizontalScrollBarVisibility="Hidden"
+                VerticalScrollBarVisibility="Disabled">
+                <StackPanel
+                  x:Name="HeaderPanel"
+                  IsItemsHost="True"
+                  KeyboardNavigation.TabIndex="1"
+                  Orientation="Horizontal" />
+              </ScrollViewer>
+            </Border>
+            <ContentPresenter
+              x:Name="PART_SelectedContentHost"
+              Margin="{TemplateBinding Padding}"
+              ContentSource="SelectedContent" />
+          </DockPanel>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!--
     Abas segmentadas (06/11/2026, o Painel Admin dentro dos Detalhes do pedido: "tab dentro de tab"): pra trocar de
     visão DENTRO de uma aba, o seletor do OptionGroup (o do Windfinder) - segmentos lado a lado com 1 px de folga, o
     escolhido no azul cheio com o texto branco, o grupo com cantos de 4. Só a aba escolhida é medida (não é o Sliding).

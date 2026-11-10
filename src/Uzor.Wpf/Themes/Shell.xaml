@@ -709,6 +709,13 @@
   <SolidColorBrush x:Key="Switch.TrackBrush" Color="#33FFFFFF" />
   <!--  O fundo da janela quando não tem Mica (Windows 10)  -->
   <SolidColorBrush x:Key="Window.FallbackBrush" Color="#1C1C1C" />
+  <!--
+    A moldura da janela quando a tela é sólida (10/11/2026, a casca do Negativo): as telas pintam o RegionBrush, então o
+    painel lateral e a barra de título ficam um degrau atrás dele - mais escuro no escuro, cinza no claro - e a tela
+    aparece como a camada redonda por cima. No Windfinder e no Provodnik a tela é translúcida e o fundo é o
+    Window.FallbackBrush.
+  -->
+  <SolidColorBrush x:Key="Frame.BackgroundBrush" Color="#141414" />
   <!--  Os fundos suaves dos ícones (a cor do estado bem apagada)  -->
   <SolidColorBrush x:Key="Accent.SoftBrush" Color="#2E3778BF" />
   <SolidColorBrush x:Key="Success.SoftBrush" Color="#2633C467" />

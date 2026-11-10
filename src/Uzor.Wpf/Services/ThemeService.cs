@@ -65,6 +65,7 @@ namespace Uzor.Wpf.Services
 
       // As camadas: no escuro a tela clareia o fundo; no claro a tela é quase branca e cartão, botão e divisória escurecem
       SetBrush("Window.FallbackBrush", dark ? Color.FromRgb(0x1C, 0x1C, 0x1C) : Color.FromRgb(0xF3, 0xF3, 0xF3));
+      SetBrush("Frame.BackgroundBrush", dark ? Color.FromRgb(0x14, 0x14, 0x14) : Color.FromRgb(0xEE, 0xEF, 0xF1));
       SetBrush("Pane.BackgroundBrush", Colors.White, dark ? 0.07 : 0.7);
       SetBrush("Card.BackgroundBrush", ink, dark ? 0.078 : 0.045);
       SetBrush("Divider.Brush", ink, dark ? 0.078 : 0.08);
