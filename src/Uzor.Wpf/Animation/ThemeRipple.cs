@@ -11,11 +11,13 @@ namespace Uzor.Wpf.Animation
   /// <summary>
   /// A troca de tema em onda (a ideia do LightDarkModeSwitchAnimation, do SlimeNull): fotografa a janela no tema
   /// velho, põe a foto por cima de tudo (barra de título e diálogo aberto inclusive), troca o tema por baixo e abre um
-  /// círculo na foto a partir do mouse, com a borda macia; quando o círculo passa do canto mais longe, a foto sai.
-  /// <para>Leve de propósito (06/11/2026, "trava tudo"): uma máscara animada só (o brilho na borda era uma segunda, do
-  /// tamanho da janela), 450 ms, a foto desenhada 1:1 sem filtro, e em sessão remota ou sem placa de vídeo a foto só
-  /// esmaece (máscara redonda animada é cara sem GPU). O que segurava a tela de verdade era a troca dos pincéis,
-  /// agora num dicionário só (ThemeService).</para>
+  /// círculo na foto a partir do mouse; quando o círculo passa do canto mais longe, a foto sai.
+  /// <para>Leve de propósito (06/11/2026, "trava tudo"): 450 ms, a foto desenhada 1:1 sem filtro, e em sessão remota
+  /// ou sem placa de vídeo a foto só esmaece. O que segurava a tela de verdade era a troca dos pincéis, agora num
+  /// dicionário só (ThemeService).</para>
+  /// <para>Borda seca (10/11/2026, "tira o efeito gradiente"): o círculo é um furo no recorte da foto (Clip), como no
+  /// SlimeNull, e não mais uma máscara com degradê na borda. A máscara ainda obrigava a foto a ser desenhada numa
+  /// camada à parte a cada quadro; o recorte não.</para>
   /// </summary>
   public static class ThemeRipple
   {
@@ -23,9 +25,6 @@ namespace Uzor.Wpf.Animation
 
     /// <summary>O esmaecer de quando não tem GPU (sessão remota, placa sem aceleração).</summary>
     private static readonly Duration FadeLength = TimeSpan.FromMilliseconds(200);
-
-    /// <summary>Onde a borda macia começa, na fração do raio (8% do raio é degradê).</summary>
-    private const double SoftEdge = 0.92;
 
     /// <summary>Faz a troca (<paramref name="change"/>) com a onda; sem janela na tela, troca direto.</summary>
     public static void Run(Window window, Action change)
@@ -65,10 +64,14 @@ namespace Uzor.Wpf.Animation
         Math.Max(new Vector(center.X, center.Y).Length, new Vector(size.Width - center.X, center.Y).Length),
         Math.Max(new Vector(center.X, size.Height - center.Y).Length, new Vector(size.Width - center.X, size.Height - center.Y).Length));
 
-      // A foto aparece fora do círculo (preto na máscara) e some dentro dele, com o degradê na borda
-      var mask = Circle(center, (Colors.Transparent, 0), (Colors.Transparent, SoftEdge), (Colors.Black, 1));
+      // A foto aparece fora do círculo e some dentro dele: o retângulo da janela com o círculo furado (par-ímpar). Quando
+      // o círculo passa da janela, a parte dele de fora entra no recorte, mas ali a foto não tem nada pra mostrar
+      var hole = new EllipseGeometry(center, 0, 0);
+      var clip = new GeometryGroup { FillRule = FillRule.EvenOdd };
+      clip.Children.Add(new RectangleGeometry(new Rect(size)));
+      clip.Children.Add(hole);
 
-      var photo = new Grid { OpacityMask = light ? null : mask };
+      var photo = new Grid { Clip = light ? null : clip };
       photo.Children.Add(new Border { Background = backdrop });
       var image = new Image { Source = shot, Stretch = Stretch.Fill };
       RenderOptions.SetBitmapScalingMode(image, BitmapScalingMode.NearestNeighbor);
@@ -105,26 +108,11 @@ namespace Uzor.Wpf.Animation
           return;
         }
 
-        var grow = new DoubleAnimation(0, reach / SoftEdge, Length) { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } };
+        var grow = new DoubleAnimation(0, reach, Length) { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } };
         grow.Completed += (_, _) => host.Children.Remove(veil);
-        mask.BeginAnimation(RadialGradientBrush.RadiusXProperty, grow);
-        mask.BeginAnimation(RadialGradientBrush.RadiusYProperty, grow);
+        hole.BeginAnimation(EllipseGeometry.RadiusXProperty, grow);
+        hole.BeginAnimation(EllipseGeometry.RadiusYProperty, grow);
       });
-    }
-
-    private static RadialGradientBrush Circle(Point center, params (Color Color, double Offset)[] stops)
-    {
-      var brush = new RadialGradientBrush
-      {
-        MappingMode = BrushMappingMode.Absolute,
-        Center = center,
-        GradientOrigin = center,
-        RadiusX = 0.01,
-        RadiusY = 0.01,
-      };
-      foreach (var (color, offset) in stops)
-        brush.GradientStops.Add(new GradientStop(color, offset));
-      return brush;
     }
 
     /// <summary>O primeiro painel do modelo da janela (o que segura a barra de título e o conteúdo).</summary>
