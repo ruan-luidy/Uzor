@@ -358,6 +358,36 @@
   </Style>
 
   <!--
+    O movimento do painel lateral (10/11/2026, "sem animação nesse botão"): o ícone cresce no mouse, como no dock que o
+    painel substituiu, e o item afunda no clique, como os botões de ícone e os itens do menu.
+  -->
+  <CubicEase x:Key="Nav.Ease" EasingMode="EaseOut" />
+  <Storyboard x:Key="Nav.IconGrow">
+    <DoubleAnimation EasingFunction="{StaticResource Nav.Ease}" Storyboard.TargetName="IconScale" Storyboard.TargetProperty="ScaleX" To="1.15" Duration="0:0:0.15" />
+    <DoubleAnimation EasingFunction="{StaticResource Nav.Ease}" Storyboard.TargetName="IconScale" Storyboard.TargetProperty="ScaleY" To="1.15" Duration="0:0:0.15" />
+  </Storyboard>
+  <Storyboard x:Key="Nav.IconRest">
+    <DoubleAnimation EasingFunction="{StaticResource Nav.Ease}" Storyboard.TargetName="IconScale" Storyboard.TargetProperty="ScaleX" To="1" Duration="0:0:0.12" />
+    <DoubleAnimation EasingFunction="{StaticResource Nav.Ease}" Storyboard.TargetName="IconScale" Storyboard.TargetProperty="ScaleY" To="1" Duration="0:0:0.12" />
+  </Storyboard>
+  <Storyboard x:Key="Nav.Press">
+    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="0.96" Duration="0:0:0.10" />
+    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="0.96" Duration="0:0:0.10" />
+  </Storyboard>
+  <Storyboard x:Key="Nav.PressIcon">
+    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="0.9" Duration="0:0:0.10" />
+    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="0.9" Duration="0:0:0.10" />
+  </Storyboard>
+  <Storyboard x:Key="Nav.ButtonGrow">
+    <DoubleAnimation EasingFunction="{StaticResource Nav.Ease}" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1.08" Duration="0:0:0.15" />
+    <DoubleAnimation EasingFunction="{StaticResource Nav.Ease}" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1.08" Duration="0:0:0.15" />
+  </Storyboard>
+  <Storyboard x:Key="Nav.Release">
+    <DoubleAnimation EasingFunction="{StaticResource Nav.Ease}" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.16" />
+    <DoubleAnimation EasingFunction="{StaticResource Nav.Ease}" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.16" />
+  </Storyboard>
+
+  <!--
     Item da navegação do painel lateral (o NavigationView da Microsoft, modo Left): ícone no Tag (Geometry), o texto e
     o contador (NavBadge). O aberto ganha o fundo cinza e a barrinha azul à esquerda. Com o painel recolhido
     (PaneCompact do shell) fica só o ícone, no meio do item (o padding sai, senão a coluna de 36 corta o ícone), o
@@ -365,6 +395,12 @@
     SideNavItem é o RadioButton das telas; SideNavButton, o mesmo visual num botão (Configurações, no rodapé).
   -->
   <Style x:Key="SideNavItem" TargetType="RadioButton">
+    <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+    <Setter Property="RenderTransform">
+      <Setter.Value>
+        <ScaleTransform />
+      </Setter.Value>
+    </Setter>
     <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
     <Setter Property="FontSize" Value="{StaticResource FontSize.Body}" />
     <Setter Property="Cursor" Value="Hand" />
@@ -394,7 +430,12 @@
                   Height="{StaticResource Icon.Size.Nav}"
                   Data="{TemplateBinding Tag}"
                   Fill="{TemplateBinding Foreground}"
-                  Stretch="Uniform" />
+                  RenderTransformOrigin="0.5,0.5"
+                  Stretch="Uniform">
+                  <Path.RenderTransform>
+                    <ScaleTransform x:Name="IconScale" />
+                  </Path.RenderTransform>
+                </Path>
                 <ContentPresenter
                   x:Name="Label"
                   Grid.Column="1"
@@ -444,6 +485,12 @@
             <Trigger Property="IsMouseOver" Value="True">
               <Setter TargetName="Item" Property="Background" Value="{DynamicResource Hover.RowBrush}" />
               <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+              <Trigger.EnterActions>
+                <BeginStoryboard Storyboard="{StaticResource Nav.IconGrow}" />
+              </Trigger.EnterActions>
+              <Trigger.ExitActions>
+                <BeginStoryboard Storyboard="{StaticResource Nav.IconRest}" />
+              </Trigger.ExitActions>
             </Trigger>
             <Trigger Property="controls:NavBadge.IsAlert" Value="True">
               <Setter TargetName="Badge" Property="Background" Value="{DynamicResource DangerBrush}" />
@@ -470,6 +517,14 @@
       </Setter.Value>
     </Setter>
     <Style.Triggers>
+      <Trigger Property="IsPressed" Value="True">
+        <Trigger.EnterActions>
+          <BeginStoryboard Storyboard="{StaticResource Nav.Press}" />
+        </Trigger.EnterActions>
+        <Trigger.ExitActions>
+          <BeginStoryboard Storyboard="{StaticResource Nav.Release}" />
+        </Trigger.ExitActions>
+      </Trigger>
       <DataTrigger Binding="{Binding DataContext.PaneCompact, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
         <Setter Property="ToolTip" Value="{Binding Content, RelativeSource={RelativeSource Self}}" />
       </DataTrigger>
@@ -477,6 +532,12 @@
   </Style>
 
   <Style x:Key="SideNavButton" TargetType="Button">
+    <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+    <Setter Property="RenderTransform">
+      <Setter.Value>
+        <ScaleTransform />
+      </Setter.Value>
+    </Setter>
     <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
     <Setter Property="FontSize" Value="{StaticResource FontSize.Body}" />
     <Setter Property="Cursor" Value="Hand" />
@@ -506,7 +567,12 @@
                   Height="{StaticResource Icon.Size.Nav}"
                   Data="{TemplateBinding Tag}"
                   Fill="{TemplateBinding Foreground}"
-                  Stretch="Uniform" />
+                  RenderTransformOrigin="0.5,0.5"
+                  Stretch="Uniform">
+                  <Path.RenderTransform>
+                    <ScaleTransform x:Name="IconScale" />
+                  </Path.RenderTransform>
+                </Path>
                 <ContentPresenter
                   x:Name="Label"
                   Grid.Column="1"
@@ -556,6 +622,12 @@
             <Trigger Property="IsMouseOver" Value="True">
               <Setter TargetName="Item" Property="Background" Value="{DynamicResource Hover.RowBrush}" />
               <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+              <Trigger.EnterActions>
+                <BeginStoryboard Storyboard="{StaticResource Nav.IconGrow}" />
+              </Trigger.EnterActions>
+              <Trigger.ExitActions>
+                <BeginStoryboard Storyboard="{StaticResource Nav.IconRest}" />
+              </Trigger.ExitActions>
             </Trigger>
             <Trigger Property="controls:NavBadge.IsAlert" Value="True">
               <Setter TargetName="Badge" Property="Background" Value="{DynamicResource DangerBrush}" />
@@ -576,6 +648,14 @@
       </Setter.Value>
     </Setter>
     <Style.Triggers>
+      <Trigger Property="IsPressed" Value="True">
+        <Trigger.EnterActions>
+          <BeginStoryboard Storyboard="{StaticResource Nav.Press}" />
+        </Trigger.EnterActions>
+        <Trigger.ExitActions>
+          <BeginStoryboard Storyboard="{StaticResource Nav.Release}" />
+        </Trigger.ExitActions>
+      </Trigger>
       <DataTrigger Binding="{Binding DataContext.PaneCompact, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
         <Setter Property="ToolTip" Value="{Binding Content, RelativeSource={RelativeSource Self}}" />
       </DataTrigger>
@@ -592,6 +672,30 @@
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="hc:IconElement.Width" Value="{StaticResource Icon.Size.Nav}" />
     <Setter Property="hc:IconElement.Height" Value="{StaticResource Icon.Size.Nav}" />
+    <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+    <Setter Property="RenderTransform">
+      <Setter.Value>
+        <ScaleTransform />
+      </Setter.Value>
+    </Setter>
+    <Style.Triggers>
+      <Trigger Property="IsMouseOver" Value="True">
+        <Trigger.EnterActions>
+          <BeginStoryboard Storyboard="{StaticResource Nav.ButtonGrow}" />
+        </Trigger.EnterActions>
+        <Trigger.ExitActions>
+          <BeginStoryboard Storyboard="{StaticResource Nav.Release}" />
+        </Trigger.ExitActions>
+      </Trigger>
+      <Trigger Property="IsPressed" Value="True">
+        <Trigger.EnterActions>
+          <BeginStoryboard Storyboard="{StaticResource Nav.PressIcon}" />
+        </Trigger.EnterActions>
+        <Trigger.ExitActions>
+          <BeginStoryboard Storyboard="{StaticResource Nav.ButtonGrow}" />
+        </Trigger.ExitActions>
+      </Trigger>
+    </Style.Triggers>
   </Style>
 
   <!--  Projeto salvo na lista do painel lateral: a mesma cara do item de navegação, mais baixo  -->

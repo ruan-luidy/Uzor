@@ -47,7 +47,12 @@ namespace Uzor.Wpf.Animation
     public static void SetPopWhen(DependencyObject element, bool value) => element.SetValue(PopWhenProperty, value);
 
     /// <summary>Sobe 10 px e aparece, depois de <paramref name="delayMs"/>.</summary>
-    public static void RiseIn(UIElement element, int delayMs = 0, double distance = 10)
+    /// <param name="fade">
+    /// Falso: só desliza, sem esmaecer (10/11/2026). Esmaecer um elemento grande (uma tela inteira com grade) faz o WPF
+    /// desenhá-lo numa camada à parte a cada quadro; numa placa fraca a animação engasga. O deslize só move o que já está
+    /// desenhado.
+    /// </param>
+    public static void RiseIn(UIElement element, int delayMs = 0, double distance = 10, bool fade = true)
     {
       if (GetQuiet(element))
       {
@@ -57,11 +62,18 @@ namespace Uzor.Wpf.Animation
 
       var move = new TranslateTransform(0, distance);
       element.RenderTransform = move;
-      element.Opacity = 0;
 
       var begin = TimeSpan.FromMilliseconds(delayMs);
       var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
       move.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(distance, 0, TimeSpan.FromMilliseconds(260)) { BeginTime = begin, EasingFunction = ease });
+      if (!fade)
+      {
+        // Sem esmaecer: a opacidade fica como estava (uma animação anterior com fade não segura o elemento apagado)
+        element.BeginAnimation(UIElement.OpacityProperty, null);
+        element.Opacity = 1;
+        return;
+      }
+      element.Opacity = 0;
       element.BeginAnimation(UIElement.OpacityProperty, new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(200)) { BeginTime = begin });
     }
 
