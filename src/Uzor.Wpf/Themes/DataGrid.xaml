@@ -165,13 +165,18 @@
     Linha sem o azul cheio do HandyControl (em cima dele a pílula e o texto azul sumiam): o destaque é um fundo
     arredondado solto das bordas, branco bem fraco no hover e o azul suave na escolhida. A divisória
     entre as linhas fica embaixo e fora do destaque, recuada das pontas.
+
+    SEM BasedOn no estilo do HandyControl (11/11/2026, "a seleção tira a cor das letras, isso é algo que não pode
+    acontecer de jeito nenhum"): os gatilhos dele pintam o texto da linha escolhida de branco, e gatilho do estilo de
+    baixo não se tira. Pra rebater, este estilo forçava a cor normal no hover e na seleção, e aí a linha que a tela
+    pintou (o âmbar do reprocesso, o cinza da batida que não conta) perdia a cor ao ser escolhida. Do HandyControl só
+    vinham margem, recuo, fundo e molde, que este estilo já redefine; o resto é o estilo padrão do WPF, que não mexe
+    na cor do texto.
   -->
-  <Style
-    x:Key="StandardDataGridRow"
-    BasedOn="{StaticResource DataGridRowStyle.Small}"
-    TargetType="DataGridRow">
+  <Style x:Key="StandardDataGridRow" TargetType="DataGridRow">
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+    <Setter Property="SnapsToDevicePixels" Value="True" />
     <!--  O estilo do HandyControl dá uma margem em cima: o destaque ficava mais longe da linha de cima que da de baixo  -->
     <Setter Property="Margin" Value="0" />
     <Setter Property="Padding" Value="0" />
@@ -206,18 +211,14 @@
       </Setter.Value>
     </Setter>
     <!--
-      O texto da LINHA continua na cor normal no mouse e na seleção: o do HandyControl, por baixo, virava branco, e quem
-      pega a cor da linha (o comentário, a nota, ícones) ficava branco sobre o destaque claro enquanto as células, que
-      já ficam na cor normal, não mudavam - uma coluna trocava de cor sozinha (06/11/2026).
+      No mouse e na seleção muda só o FUNDO: o texto fica na cor que a linha já tinha, a normal ou a que a tela deu.
     -->
     <Style.Triggers>
       <Trigger Property="IsMouseOver" Value="True">
         <Setter Property="Background" Value="{DynamicResource Hover.RowBrush}" />
-        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
       </Trigger>
       <Trigger Property="IsSelected" Value="True">
         <Setter Property="Background" Value="{StaticResource Selection.RowBrush}" />
-        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
       </Trigger>
     </Style.Triggers>
   </Style>
@@ -274,10 +275,14 @@
         </ControlTemplate>
       </Setter.Value>
     </Setter>
+    <!--
+      Escolhida, a célula segue a cor da LINHA (11/11/2026): o HandyControl pinta a célula selecionada de branco, e a cor
+      normal fixa que estava aqui apagava a linha âmbar ou cinza da tela.
+    -->
     <Style.Triggers>
       <Trigger Property="IsSelected" Value="True">
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+        <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=DataGridRow}}" />
       </Trigger>
     </Style.Triggers>
   </Style>
