@@ -33,6 +33,11 @@ namespace Uzor.Wpf.Controls
       style.Setters.Add(new Setter(FrameworkElement.FocusVisualStyleProperty, null));
       var hover = new Trigger { Property = UIElement.IsMouseOverProperty, Value = true };
       hover.Setters.Add(new Setter(Control.BackgroundProperty, new DynamicResourceExtension("Button.HoverBrush")));
+      // O texto azul do hover no PRÓPRIO segmento, e não só no apresentador do molde, como faz o HandyControl (11/11/2026,
+      // "não fica com a letra azul que nem os outros"): conteúdo montado à mão (o "Todas do produto 5" do Acompanhamento,
+      // texto com o número em negrito) é filho lógico do segmento e herda a cor DELE, não a do apresentador. O marcado
+      // vem depois e ganha: o escolhido segue branco no azul.
+      hover.Setters.Add(new Setter(Control.ForegroundProperty, new DynamicResourceExtension("PrimaryBrush")));
       style.Triggers.Add(hover);
       // ToggleButton marcado (filtro de várias escolhas, 07/11/2026): o HandyControl pinta o fundo de destaque e deixa o
       // texto na cor de sempre - no claro, preto no azul. O RadioButton ele pinta; aqui os dois pegam o texto de
