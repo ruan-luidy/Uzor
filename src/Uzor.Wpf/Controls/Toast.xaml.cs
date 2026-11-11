@@ -82,7 +82,12 @@ namespace Uzor.Wpf.Controls
       if (IsClosing)
         return;
 
-      Detach();
+      // A linha do tempo CONGELA onde estava enquanto o cartão sai (11/11/2026, "quando clico pra fechar a barrinha
+      // volta pra 100 e daí fecha"): parar o relógio (Stop) devolve a escala ao valor de base, a linha cheia. Pausado,
+      // ele segura o valor; e sem a referência o fim dele não chama o Hide de novo nem o mouse o retoma.
+      IsClosing = true;
+      _life?.Pause(this);
+      _life = null;
       var slideOut = ((Storyboard)Resources["SlideOut"]).Clone();
       slideOut.Completed += (_, _) => Closed?.Invoke(this, EventArgs.Empty);
       slideOut.Begin(this);
