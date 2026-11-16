@@ -458,7 +458,7 @@
                     FontSize="11"
                     FontWeight="SemiBold"
                     Foreground="White"
-                    Text="{Binding (controls:NavBadge.Count), RelativeSource={RelativeSource TemplatedParent}}" />
+                    Text="{Binding Path=(controls:NavBadge.Count), RelativeSource={RelativeSource TemplatedParent}}" />
                 </Border>
                 <!--  Recolhido: o contador vira uma bolinha no canto do ícone  -->
                 <Ellipse
@@ -595,7 +595,7 @@
                     FontSize="11"
                     FontWeight="SemiBold"
                     Foreground="White"
-                    Text="{Binding (controls:NavBadge.Count), RelativeSource={RelativeSource TemplatedParent}}" />
+                    Text="{Binding Path=(controls:NavBadge.Count), RelativeSource={RelativeSource TemplatedParent}}" />
                 </Border>
                 <!--  Recolhido: o contador vira uma bolinha no canto do ícone  -->
                 <Ellipse

@@ -74,7 +74,7 @@
               VerticalAlignment="Center"
               FontSize="{StaticResource FontSize.XS}"
               Foreground="White"
-              Text="{Binding (controls:NavBadge.Count), RelativeSource={RelativeSource TemplatedParent}}" />
+              Text="{Binding Path=(controls:NavBadge.Count), RelativeSource={RelativeSource TemplatedParent}}" />
           </Border>
           <Ellipse
             x:Name="Dot"
