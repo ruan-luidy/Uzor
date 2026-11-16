@@ -610,11 +610,13 @@
             SnapsToDevicePixels="True">
             <!--  O Padding o próprio TextBox já aplica no texto: aqui só no exemplo, pra ele cair no mesmo lugar  -->
             <Grid>
+              <!--  Na fonte normal: a de largura fixa (número de peça, batch) é só pro que se digita  -->
               <TextBlock
                 x:Name="Placeholder"
                 Margin="{TemplateBinding Padding}"
                 Padding="2,0,0,0"
                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                FontFamily="{StaticResource FontFamily.Default}"
                 Foreground="{DynamicResource SecondaryTextBrush}"
                 IsHitTestVisible="False"
                 Text="{TemplateBinding hc:InfoElement.Placeholder}"
