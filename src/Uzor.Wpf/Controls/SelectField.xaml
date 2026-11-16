@@ -35,6 +35,10 @@
               <Trigger Property="IsChecked" Value="True">
                 <Setter TargetName="Box" Property="Background" Value="{DynamicResource Accent.SoftBrush}" />
               </Trigger>
+              <!--  Desligada: o fundo do botão apertado e o texto apagado, como o campo só leitura  -->
+              <Trigger Property="IsEnabled" Value="False">
+                <Setter TargetName="Box" Property="Background" Value="{DynamicResource Button.PressedBrush}" />
+              </Trigger>
             </ControlTemplate.Triggers>
           </ControlTemplate>
         </Setter.Value>
@@ -140,10 +144,17 @@
             </Style>
           </Path.Style>
         </Path>
-        <TextBlock
-          x:Name="Label"
-          VerticalAlignment="Center"
-          TextTrimming="CharacterEllipsis" />
+        <Grid>
+          <TextBlock
+            x:Name="Label"
+            VerticalAlignment="Center"
+            TextTrimming="CharacterEllipsis" />
+          <!--  Com ItemTemplate, o escolhido sai com o mesmo desenho da lista  -->
+          <ContentPresenter
+            x:Name="LabelContent"
+            VerticalAlignment="Center"
+            Visibility="Collapsed" />
+        </Grid>
       </DockPanel>
     </ToggleButton>
 

@@ -26,6 +26,12 @@ namespace Uzor.Wpf.Controls
     public static readonly DependencyProperty PlaceholderProperty = DependencyProperty.Register(
       nameof(Placeholder), typeof(string), typeof(SelectField), new PropertyMetadata(string.Empty, OnLookChanged));
 
+    public static readonly DependencyProperty DisplayMemberPathProperty = DependencyProperty.Register(
+      nameof(DisplayMemberPath), typeof(string), typeof(SelectField), new PropertyMetadata(string.Empty, OnLookChanged));
+
+    public static readonly DependencyProperty ItemTemplateProperty = DependencyProperty.Register(
+      nameof(ItemTemplate), typeof(DataTemplate), typeof(SelectField), new PropertyMetadata(null, OnLookChanged));
+
     /// <summary>Folga entre a caixa e a lista aberta (embaixo ou em cima).</summary>
     private const double Gap = 4;
 
@@ -36,6 +42,7 @@ namespace Uzor.Wpf.Controls
     {
       InitializeComponent();
       DropDown.CustomPopupPlacementCallback = Place;
+      IsEnabledChanged += (_, _) => Show();
       Show();
     }
 
@@ -74,6 +81,20 @@ namespace Uzor.Wpf.Controls
       set => SetValue(PlaceholderProperty, value);
     }
 
+    /// <summary>Campo que vira o texto do item ("Name", "Label"); vazio usa o ToString.</summary>
+    public string DisplayMemberPath
+    {
+      get => (string)GetValue(DisplayMemberPathProperty);
+      set => SetValue(DisplayMemberPathProperty, value);
+    }
+
+    /// <summary>O desenho de cada item na lista; a caixa fechada mostra o escolhido com o mesmo desenho.</summary>
+    public DataTemplate? ItemTemplate
+    {
+      get => (DataTemplate?)GetValue(ItemTemplateProperty);
+      set => SetValue(ItemTemplateProperty, value);
+    }
+
     private static void OnItemsSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
       var field = (SelectField)d;
@@ -84,8 +105,13 @@ namespace Uzor.Wpf.Controls
     private static void OnSelectedItemChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) =>
       ((SelectField)d).Show();
 
-    private static void OnLookChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) =>
-      ((SelectField)d).Show();
+    private static void OnLookChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+      var field = (SelectField)d;
+      field.Items.DisplayMemberPath = field.ItemTemplate is null ? field.DisplayMemberPath : string.Empty;
+      field.Items.ItemTemplate = field.ItemTemplate;
+      field.Show();
+    }
 
     private void Show()
     {
@@ -93,10 +119,22 @@ namespace Uzor.Wpf.Controls
         Items.SelectedItem = SelectedItem;
 
       var chosen = SelectedItem is not null;
-      Label.Text = chosen ? SelectedItem!.ToString() : Placeholder;
-      // Por referência: o pincel pego uma vez ficava no tema da hora (voltando pro escuro, o texto ficava preto)
-      Toggle.SetResourceReference(ForegroundProperty, chosen ? "PrimaryTextBrush" : "SecondaryTextBrush");
+      // Com desenho próprio, a caixa fechada mostra o escolhido com ele (data com dia da semana, nome do fundo...)
+      var drawn = chosen && ItemTemplate is not null;
+      Label.Text = drawn ? string.Empty : chosen ? Text(SelectedItem!) : Placeholder;
+      Label.Visibility = drawn ? Visibility.Collapsed : Visibility.Visible;
+      LabelContent.ContentTemplate = drawn ? ItemTemplate : null;
+      LabelContent.Content = drawn ? SelectedItem : null;
+      LabelContent.Visibility = drawn ? Visibility.Visible : Visibility.Collapsed;
+      // Por referência: o pincel pego uma vez ficava no tema da hora (voltando pro escuro, o texto ficava preto).
+      // Desligada (o Exportar do Windfinder rodando) fica no cinza.
+      Toggle.SetResourceReference(ForegroundProperty, chosen && IsEnabled ? "PrimaryTextBrush" : "SecondaryTextBrush");
     }
+
+    private string Text(object item) =>
+      (string.IsNullOrEmpty(DisplayMemberPath)
+        ? item.ToString()
+        : item.GetType().GetProperty(DisplayMemberPath)?.GetValue(item)?.ToString()) ?? string.Empty;
 
     /// <summary>O zoom e o fade do menu de botão direito (o ContextMenu do Components.xaml), a cada vez que abre.</summary>
     private void DropDown_Opened(object? sender, EventArgs e)
