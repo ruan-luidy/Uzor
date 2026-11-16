@@ -15,6 +15,10 @@ namespace Uzor.Wpf.Services
   ///
   /// <para>Todo toast devolve um <see cref="ToastHandle"/>: dá pra abrir "processando" e trocar pelo resultado no
   /// MESMO cartão, sem um sair e outro entrar.</para>
+  ///
+  /// <para>Na área de trabalho (o do Windfinder, que vive no relógio): no topo da tela, no centro, numa janelinha sempre
+  /// por cima que não rouba o foco e deixa o clique passar fora do cartão. Desligado por padrão; o app liga com
+  /// <see cref="DesktopWhenNoWindow"/>, e um aviso pede com <c>desktop: true</c>.</para>
   /// </summary>
   public static class ToastService
   {
@@ -26,6 +30,14 @@ namespace Uzor.Wpf.Services
 
     private static AdornerStack? _stack;
     private static AdornerLayer? _layer;
+    private static DesktopStack? _desktop;
+
+    /// <summary>
+    /// Sem janela boa pra entrar (o app no relógio ou minimizado, ou a janela ativa pequena demais pro cartão, como a
+    /// janelinha do Finder do Windfinder), o toast vai pra área de trabalho em vez de se perder. Desligado, fica como
+    /// sempre foi: só dentro da janela.
+    /// </summary>
+    public static bool DesktopWhenNoWindow { get; set; }
 
     public static ToastHandle Info(string message, string? title = null) => Show(DialogKind.Info, title ?? Texts.ToastInfo, message, Short);
 
@@ -37,11 +49,12 @@ namespace Uzor.Wpf.Services
 
     /// <param name="lifetime">Quanto fica; null = até fechar no X.</param>
     /// <param name="icon">Outro ícone no lugar do padrão do tom.</param>
+    /// <param name="desktop">Com o app sem foco, vai pra área de trabalho (o aviso de versão nova, o alerta do Finder).</param>
     public static ToastHandle Show(DialogKind kind, string title, string message, TimeSpan? lifetime, string? actionText = null,
-      Action? action = null, PackIconPhosphorIconsKind? icon = null)
+      Action? action = null, PackIconPhosphorIconsKind? icon = null, bool desktop = false)
     {
       var handle = new ToastHandle();
-      handle.Show(kind, title, message, lifetime, actionText, action, icon);
+      handle.Show(kind, title, message, lifetime, actionText, action, icon, desktop);
       return handle;
     }
 
@@ -57,7 +70,7 @@ namespace Uzor.Wpf.Services
     /// Roda no cartão do handle, na thread da tela. Se ele já saiu (fechou no X, acabou o tempo, deu lugar a outro),
     /// abre um novo: o resultado de uma operação não pode se perder porque o "processando" foi fechado.
     /// </summary>
-    internal static void Run(ToastHandle handle, Action<Toast> configure)
+    internal static void Run(ToastHandle handle, Action<Toast> configure, bool desktop = false)
     {
       var app = Application.Current;
       if (app is null)
@@ -67,8 +80,7 @@ namespace Uzor.Wpf.Services
       {
         if (handle.Card is not { IsClosing: false } toast)
         {
-          var window = app.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive) ?? app.MainWindow;
-          if (window is not { IsLoaded: true, IsVisible: true } || InWindow(window) is not { } stack)
+          if (Stack(app, desktop) is not { } stack)
             return;
 
           toast = new Toast();
@@ -80,6 +92,24 @@ namespace Uzor.Wpf.Services
 
         configure(toast);
       });
+    }
+
+    /// <summary>Onde o toast entra: a janela ativa (ou a principal) ou, com a área de trabalho ligada, a janelinha dela.</summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1859", Justification = "Devolve a pilha da janela OU a da área de trabalho")]
+    private static IToastStack? Stack(Application app, bool desktop)
+    {
+      var window = app.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive) ?? app.MainWindow;
+      if (!DesktopWhenNoWindow && !desktop)
+        return window is { IsLoaded: true, IsVisible: true } ? InWindow(window) : null;
+
+      var visible = window is { IsLoaded: true, IsVisible: true } && window.WindowState != WindowState.Minimized;
+      // O cartão (380 de largura, no topo) só entra em janela onde não tapa o que ela mostra
+      var fits = visible && window!.ActualWidth >= 700 && window.ActualHeight >= 400;
+      var away = !visible || !window!.IsActive;
+      if (fits && !(desktop && away) && InWindow(window!) is { } inWindow)
+        return inWindow;
+
+      return _desktop ??= new DesktopStack(() => _desktop = null);
     }
 
     /// <summary>
@@ -126,8 +156,15 @@ namespace Uzor.Wpf.Services
       }
     }
 
+    private interface IToastStack
+    {
+      void Add(Toast toast);
+
+      void Remove(Toast toast);
+    }
+
     /// <summary>Centro, logo abaixo da barra de título; só o cartão recebe clique.</summary>
-    private sealed class AdornerStack : Adorner
+    private sealed class AdornerStack : Adorner, IToastStack
     {
       private readonly StackPanel _panel = new() { HorizontalAlignment = HorizontalAlignment.Center };
 
@@ -189,6 +226,63 @@ namespace Uzor.Wpf.Services
         return null;
       }
     }
+
+    /// <summary>Janelinha no topo da área de trabalho, no centro, sempre por cima, sem foco e sem ícone na barra.</summary>
+    private sealed class DesktopStack : IToastStack
+    {
+      // A largura máxima do toast (480) com a sombra dele dos lados
+      private const double Width = 540;
+
+      private readonly StackPanel _panel = new() { VerticalAlignment = VerticalAlignment.Top, HorizontalAlignment = HorizontalAlignment.Center };
+      private readonly Window _window;
+      private readonly Action _closed;
+
+      public DesktopStack(Action closed)
+      {
+        _closed = closed;
+        var area = SystemParameters.WorkArea;
+        _window = new Window
+        {
+          WindowStyle = WindowStyle.None,
+          AllowsTransparency = true,
+          Background = Brushes.Transparent,
+          ShowInTaskbar = false,
+          ShowActivated = false,
+          Topmost = true,
+          ResizeMode = ResizeMode.NoResize,
+          Width = Width,
+          Height = 520,
+          Left = area.Left + Math.Round((area.Width - Width) / 2),
+          Top = area.Top,
+          Content = _panel,
+        };
+        _window.Show();
+      }
+
+      public void Add(Toast toast)
+      {
+        while (_panel.Children.Count >= MaxToasts)
+        {
+          if (_panel.Children[0] is Toast oldest)
+            oldest.Detach();
+          _panel.Children.RemoveAt(0);
+        }
+
+        // Como dentro da janela: 8 do topo, um embaixo do outro
+        toast.Margin = new Thickness(0, 8, 0, 0);
+        _panel.Children.Add(toast);
+      }
+
+      public void Remove(Toast toast)
+      {
+        _panel.Children.Remove(toast);
+        if (_panel.Children.Count == 0)
+        {
+          _window.Close();
+          _closed();
+        }
+      }
+    }
   }
 
   /// <summary>
@@ -201,8 +295,8 @@ namespace Uzor.Wpf.Services
     internal Toast? Card { get; set; }
 
     public void Show(DialogKind kind, string title, string message, TimeSpan? lifetime, string? actionText = null,
-      Action? action = null, PackIconPhosphorIconsKind? icon = null)
-      => ToastService.Run(this, t => t.Show(kind, title, message, lifetime, actionText, action, icon));
+      Action? action = null, PackIconPhosphorIconsKind? icon = null, bool desktop = false)
+      => ToastService.Run(this, t => t.Show(kind, title, message, lifetime, actionText, action, icon), desktop);
 
     public void Busy(string title, string message) => ToastService.Run(this, t => t.ShowBusy(title, message));
 

@@ -84,6 +84,12 @@ namespace Uzor.Wpf.Services
       return result.Task;
     }
 
+    /// <summary>
+    /// Se dá pra abrir um diálogo por cima da janela agora. Com o app só no relógio ou numa janelinha sem o token (o
+    /// Finder do Windfinder), o diálogo não aparecia e o await nunca terminava: quem tem janela própria usa ela.
+    /// </summary>
+    public static bool CanShowOverlay() => Host() is not null;
+
     /// <summary>O token da janela que pode receber o overlay (ele entra na camada de adorno dela).</summary>
     private static string? Host() =>
       Application.Current?.MainWindow is { IsLoaded: true, IsVisible: true } window
