@@ -718,6 +718,8 @@
   <converters:LastColumnConverter x:Key="IsLastColumn" />
   <!--  "A célula da coluna é à direita?" (o cabeçalho de número vai pra direita sozinho)  -->
   <converters:RightAlignedColumnConverter x:Key="IsRightAlignedColumn" />
+  <!--  O tom da linha (RowTone) no tom do Chip: a coluna de status em chip  -->
+  <converters:RowToneToToneConverter x:Key="RowToneToTone" />
 
   <!--
     Cabeçalho: separador de coluna na direita (mesma cor e mesmo x do das células) e a linha de baixo. A última
