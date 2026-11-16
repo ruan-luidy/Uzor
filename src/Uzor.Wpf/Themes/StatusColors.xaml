@@ -54,6 +54,7 @@
   -->
   <Style x:Key="ChangeText" TargetType="TextBlock">
     <Setter Property="FontFamily" Value="{StaticResource FontFamily.Numbers}" />
+    <Setter Property="Typography.NumeralAlignment" Value="Tabular" />
     <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
     <Style.Triggers>
       <DataTrigger Binding="{Binding IsUp}" Value="True">
@@ -71,6 +72,7 @@
   -->
   <Style x:Key="DirectionText" TargetType="TextBlock">
     <Setter Property="FontFamily" Value="{StaticResource FontFamily.Numbers}" />
+    <Setter Property="Typography.NumeralAlignment" Value="Tabular" />
     <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
     <Style.Triggers>
       <DataTrigger Binding="{Binding IsUp}" Value="True">

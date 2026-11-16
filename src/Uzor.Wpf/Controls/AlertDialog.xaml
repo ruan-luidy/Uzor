@@ -92,6 +92,7 @@
                   <TextBlock
                     x:Name="DetailsText"
                     FontFamily="{StaticResource FontFamily.Numbers}"
+                    Typography.NumeralAlignment="Tabular"
                     FontSize="{StaticResource FontSize.Sm}"
                     Foreground="{DynamicResource SecondaryTextBrush}"
                     TextWrapping="Wrap" />

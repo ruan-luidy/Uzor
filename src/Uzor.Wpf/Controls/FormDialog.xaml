@@ -104,6 +104,7 @@
               </DataTrigger>
               <DataTrigger Binding="{Binding Monospace}" Value="True">
                 <Setter TargetName="Box" Property="FontFamily" Value="{StaticResource FontFamily.Numbers}" />
+                <Setter TargetName="Box" Property="Typography.NumeralAlignment" Value="Tabular" />
               </DataTrigger>
               <DataTrigger Binding="{Binding Hint}" Value="{x:Null}">
                 <Setter TargetName="Below" Property="Visibility" Value="Collapsed" />

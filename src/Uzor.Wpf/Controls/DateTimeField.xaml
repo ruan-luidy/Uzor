@@ -50,6 +50,7 @@
       <Setter Property="Margin" Value="0,0,4,0" />
       <Setter Property="Cursor" Value="Hand" />
       <Setter Property="FontFamily" Value="{StaticResource FontFamily.Numbers}" />
+      <Setter Property="Typography.NumeralAlignment" Value="Tabular" />
       <Setter Property="FontSize" Value="{StaticResource FontSize.Sm}" />
       <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
       <Setter Property="FocusVisualStyle" Value="{x:Null}" />

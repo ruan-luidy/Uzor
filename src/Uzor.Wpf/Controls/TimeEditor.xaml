@@ -22,6 +22,7 @@
     </Style>
     <Style x:Key="SegmentText" TargetType="TextBlock">
       <Setter Property="FontFamily" Value="{StaticResource FontFamily.Numbers}" />
+      <Setter Property="Typography.NumeralAlignment" Value="Tabular" />
       <Setter Property="FontSize" Value="{StaticResource FontSize.Body}" />
       <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
     </Style>

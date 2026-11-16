@@ -56,6 +56,7 @@
   <!--  Número de mercado: fonte tabular, alinhado à direita  -->
   <Style x:Key="NumberText" TargetType="TextBlock">
     <Setter Property="FontFamily" Value="{StaticResource FontFamily.Numbers}" />
+    <Setter Property="Typography.NumeralAlignment" Value="Tabular" />
     <Setter Property="FontSize" Value="{StaticResource FontSize.Body}" />
     <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
     <Setter Property="TextAlignment" Value="Right" />
@@ -104,6 +105,7 @@
     <Setter Property="Margin" Value="0,0,4,4" />
     <Setter Property="FontSize" Value="{StaticResource FontSize.Sm}" />
     <Setter Property="FontFamily" Value="{StaticResource FontFamily.Numbers}" />
+    <Setter Property="Typography.NumeralAlignment" Value="Tabular" />
     <Setter Property="Cursor" Value="Hand" />
     <Setter Property="Template">
       <Setter.Value>
@@ -339,6 +341,7 @@
     <Setter Property="Padding" Value="2,0" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="FontFamily" Value="{StaticResource FontFamily.Numbers}" />
+    <Setter Property="Typography.NumeralAlignment" Value="Tabular" />
     <Setter Property="FontSize" Value="11" />
     <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
     <Setter Property="CharacterCasing" Value="Upper" />
@@ -457,6 +460,7 @@
     BasedOn="{StaticResource ToolbarTextBox}"
     TargetType="{x:Type hc:TextBox}">
     <Setter Property="FontFamily" Value="{StaticResource FontFamily.Numbers}" />
+    <Setter Property="Typography.NumeralAlignment" Value="Tabular" />
     <Setter Property="CharacterCasing" Value="Upper" />
   </Style>
 
@@ -888,6 +892,7 @@
   <!--  Célula de número: fonte tabular à direita  -->
   <Style x:Key="NumberCell" TargetType="TextBlock">
     <Setter Property="FontFamily" Value="{StaticResource FontFamily.Numbers}" />
+    <Setter Property="Typography.NumeralAlignment" Value="Tabular" />
     <Setter Property="HorizontalAlignment" Value="Right" />
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="Margin" Value="0,0,6,0" />

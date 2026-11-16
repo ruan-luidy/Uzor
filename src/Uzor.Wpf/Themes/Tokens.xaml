@@ -143,8 +143,12 @@
     ShadowDepth="3"
     Color="Black" />
 
-  <!--  Font family padrão e a de números (tabular: os dígitos não "dançam" quando o preço muda)  -->
+  <!--
+    Font family padrão e a de números: a mesma Segoe UI (16/11/2026, Ruan: "não gosto de números em monoespaço"; era
+    Consolas). Quem usa a de números põe também Typography.NumeralAlignment=Tabular: os dígitos ficam da mesma largura
+    e o número não "dança" quando muda, sem a cara de fonte de código.
+  -->
   <FontFamily x:Key="FontFamily.Default">Segoe UI</FontFamily>
-  <FontFamily x:Key="FontFamily.Numbers">Consolas</FontFamily>
+  <FontFamily x:Key="FontFamily.Numbers">Segoe UI</FontFamily>
 
 </ResourceDictionary>
