@@ -12,6 +12,8 @@ namespace Uzor.Wpf.Services
   /// Claro ou escuro: os pincéis do tema (os do HandyControl e as camadas da Uzor: o hover, a grade, a barra de
   /// rolagem, o que flutua, os tons do texto) ficam numa camada só, no fim dos mesclados do Application, e quem usa pega
   /// por DynamicResource (ou StaticResource: o pincel é o mesmo objeto o app inteiro).
+  /// <para>Só pincel de cor fixa entra (18/11/2026, Windfinder 1.3.1): os degradês do HandyControl pegam a cor de uma
+  /// Color do tema por DynamicResource, vinham transparentes copiados e ficam com ele (com as Color da partida).</para>
   /// <para>Pincéis vivos (18/11/2026, "o switch de dark mode pra light ainda dá uma engasgada feia"): a camada entra uma
   /// vez, na partida, e a troca de tema só muda a COR dos pincéis dela, por binding. Trocar dicionário fazia o WPF
   /// percorrer a árvore de todas as telas montadas atrás de quem usava cada chave: eram três passadas por troca (o
@@ -134,8 +136,12 @@ namespace Uzor.Wpf.Services
       {
         foreach (var (key, value) in Entries(handy.GetThemeDictionary(dark ? "Dark" : "Light")))
         {
-          if (value is SolidColorBrush or LinearGradientBrush && !rootKeys.Contains(key))
-            targets[key] = (Brush)value;
+          // Só o pincel de cor fixa. Os degradês do HandyControl (PrimaryBrush, DangerBrush, SuccessBrush...) e o pincel
+          // com a cor por DynamicResource pegam a cor de uma Color do tema: lidos fora de tela vêm transparentes, e
+          // copiados assim apagavam o botão marcado do OptionGroup (Windfinder 1.3.1). Esses ficam com o HandyControl
+          if (value is SolidColorBrush solid && solid.ReadLocalValue(SolidColorBrush.ColorProperty) is not Expression
+            && !rootKeys.Contains(key))
+            targets[key] = solid;
         }
       }
 
@@ -209,78 +215,39 @@ namespace Uzor.Wpf.Services
     }
 
     /// <summary>
-    /// Um pincel do tema que é sempre o mesmo objeto: a cor (e a opacidade) vem por binding de uma <see cref="Paint"/>,
-    /// e trocar o tema é trocar a tinta. Sólido ou em degradê (o PrimaryBrush do HandyControl é um degradê).
+    /// Um pincel do tema que é sempre o mesmo objeto: a cor e a opacidade vêm por binding de uma <see cref="Paint"/>, e
+    /// trocar o tema é trocar a tinta.
     /// </summary>
     private sealed class LiveBrush
     {
-      private readonly Paint _opacity;
-      private readonly Paint[] _stops;
+      private readonly Paint _paint;
 
-      private LiveBrush(Brush brush, Paint opacity, Paint[] stops)
+      private LiveBrush(SolidColorBrush brush, Paint paint)
       {
         Brush = brush;
-        _opacity = opacity;
-        _stops = stops;
+        _paint = paint;
       }
 
-      public Brush Brush { get; }
+      public SolidColorBrush Brush { get; }
 
       public static LiveBrush? Create(Brush model)
       {
-        switch (model)
-        {
-          case SolidColorBrush solid:
-          {
-            var paint = new Paint(solid.Color, solid.Opacity);
-            var brush = new SolidColorBrush();
-            Bind(brush, SolidColorBrush.ColorProperty, paint, nameof(Paint.Color));
-            Bind(brush, Brush.OpacityProperty, paint, nameof(Paint.Opacity));
-            return new LiveBrush(brush, paint, [paint]);
-          }
-          case LinearGradientBrush gradient:
-          {
-            var opacity = new Paint(default, gradient.Opacity);
-            var brush = new LinearGradientBrush
-            {
-              StartPoint = gradient.StartPoint,
-              EndPoint = gradient.EndPoint,
-              MappingMode = gradient.MappingMode,
-              SpreadMethod = gradient.SpreadMethod,
-              ColorInterpolationMode = gradient.ColorInterpolationMode,
-            };
-            Bind(brush, Brush.OpacityProperty, opacity, nameof(Paint.Opacity));
-            var stops = new Paint[gradient.GradientStops.Count];
-            for (var i = 0; i < stops.Length; i++)
-            {
-              var source = gradient.GradientStops[i];
-              stops[i] = new Paint(source.Color, 1);
-              var stop = new GradientStop { Offset = source.Offset };
-              Bind(stop, GradientStop.ColorProperty, stops[i], nameof(Paint.Color));
-              brush.GradientStops.Add(stop);
-            }
-            return new LiveBrush(brush, opacity, stops);
-          }
-          default:
-            return null;
-        }
+        if (model is not SolidColorBrush solid)
+          return null;
+        var paint = new Paint(solid.Color, solid.Opacity);
+        var brush = new SolidColorBrush();
+        Bind(brush, SolidColorBrush.ColorProperty, paint, nameof(Paint.Color));
+        Bind(brush, System.Windows.Media.Brush.OpacityProperty, paint, nameof(Paint.Opacity));
+        return new LiveBrush(brush, paint);
       }
 
-      /// <summary>As cores do pincel do outro tema; forma diferente (outro número de paradas do degradê) fica como está.</summary>
+      /// <summary>A cor do pincel do outro tema.</summary>
       public void Repaint(Brush target)
       {
-        switch (target)
-        {
-          case SolidColorBrush solid when Brush is SolidColorBrush:
-            _opacity.Color = solid.Color;
-            _opacity.Opacity = solid.Opacity;
-            break;
-          case LinearGradientBrush gradient when Brush is LinearGradientBrush && gradient.GradientStops.Count == _stops.Length:
-            _opacity.Opacity = gradient.Opacity;
-            for (var i = 0; i < _stops.Length; i++)
-              _stops[i].Color = gradient.GradientStops[i].Color;
-            break;
-        }
+        if (target is not SolidColorBrush solid)
+          return;
+        _paint.Color = solid.Color;
+        _paint.Opacity = solid.Opacity;
       }
 
       private static void Bind(DependencyObject target, DependencyProperty property, Paint source, string path) =>

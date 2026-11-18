@@ -44,6 +44,14 @@ namespace Uzor.Wpf.Controls
       // destaque do grupo (o branco do OptionGroup).
       if (typeof(ToggleButton).IsAssignableFrom(baseStyle.TargetType))
       {
+        // O azul do marcado (o molde do HandyControl pinta o fundo com o HighlightBackground do PRÓPRIO segmento) vem do
+        // grupo por binding, e não por herança (18/11/2026): os formatos do Exportar do Windfinder, ToggleButton posto
+        // no grupo por código, ficaram sem a herança com a troca de tema da Uzor e o marcado saía sem fundo
+        style.Setters.Add(new Setter(VisualElement.HighlightBackgroundProperty, new Binding
+        {
+          Path = new PropertyPath(VisualElement.HighlightBackgroundProperty),
+          RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor, typeof(ButtonGroup), 1),
+        }));
         var marcado = new Trigger { Property = ToggleButton.IsCheckedProperty, Value = true };
         marcado.Setters.Add(new Setter(Control.ForegroundProperty, new Binding
         {
