@@ -1,4 +1,7 @@
+using System.ComponentModel;
+using System.Reflection;
 using System.Windows;
+using System.Windows.Data;
 using System.Windows.Media;
 using HandyControl.Themes;
 using Uzor.Wpf.Animation;
@@ -6,11 +9,20 @@ using Uzor.Wpf.Animation;
 namespace Uzor.Wpf.Services
 {
   /// <summary>
-  /// Claro ou escuro: o ThemeManager do HandyControl troca as cores dele na hora, e os pincéis da Uzor (as camadas, o
-  /// hover, a grade, a barra de rolagem, o que flutua, os tons do texto) ganham a versão do tema por cima, no
-  /// Application.Resources. Quem usa eles pega por DynamicResource; os valores dos XAML são os do escuro.
-  /// <para>Guardar a escolha é do app: ele chama <see cref="Apply"/> na partida e <see cref="Switch"/> quando a pessoa
-  /// troca.</para>
+  /// Claro ou escuro: os pincéis do tema (os do HandyControl e as camadas da Uzor: o hover, a grade, a barra de
+  /// rolagem, o que flutua, os tons do texto) ficam numa camada só, no fim dos mesclados do Application, e quem usa pega
+  /// por DynamicResource (ou StaticResource: o pincel é o mesmo objeto o app inteiro).
+  /// <para>Pincéis vivos (18/11/2026, "o switch de dark mode pra light ainda dá uma engasgada feia"): a camada entra uma
+  /// vez, na partida, e a troca de tema só muda a COR dos pincéis dela, por binding. Trocar dicionário fazia o WPF
+  /// percorrer a árvore de todas as telas montadas atrás de quem usava cada chave: eram três passadas por troca (o
+  /// HandyControl põe o dicionário novo, tira o velho, a Uzor troca a camada), 0,5 a 0,8 s com a tela parada e até
+  /// 2,3 s até ela assentar no PC do Ruan; medido com 40 telas, de 2,8 a 4,5 s pra 13 ms. Mudar a cor de um pincel só
+  /// manda redesenhar quem usa. O pincel tem binding pra não ser congelado (o Application congela o que é dele, e
+  /// pincel congelado não troca de cor): código que congela caneta ou desenho feito com pincel do tema tem que conferir
+  /// o CanFreeze antes.</para>
+  /// <para>O HandyControl continua sabendo do tema (o ThemeManager muda, e quem ouve ele também), só não troca mais o
+  /// dicionário dele depois da partida; as cores soltas dele (Color, não pincel) ficam as da partida. Guardar a escolha é
+  /// do app: ele chama <see cref="Apply"/> na partida e <see cref="Switch"/> quando a pessoa troca.</para>
   /// </summary>
   public static class ThemeService
   {
@@ -33,24 +45,105 @@ namespace Uzor.Wpf.Services
         ThemeRipple.Run(window, () => Apply(dark));
     }
 
-    /// <summary>
-    /// A camada de pincéis do tema: UM dicionário, no fim dos mesclados do Application (o último mesclado ganha), que
-    /// a troca de tema substitui inteiro. Antes cada pincel era gravado sozinho em Application.Resources, e cada
-    /// gravação fazia o WPF percorrer a árvore de TODAS as telas abertas atrás de quem usa aquela chave: ~40 passadas
-    /// por troca. Com 36 telas montadas a troca segurava a tela 1 s (4 s na primeira) - "a animação trava tudo".
-    /// </summary>
+    // A camada de pincéis vivos, e o pincel de cada chave dela
     private static ResourceDictionary? _layer;
+    private static readonly Dictionary<object, LiveBrush> _live = [];
+
+    // O HandyControl só troca o dicionário dele com este campo ligado (ThemeManager.ApplyApplicationTheme). Sem o campo
+    // (outra versão do HandyControl), a troca volta a ser a dele, inteira: mais lenta, mas certa
+    private static readonly FieldInfo? HandyInitialized =
+      typeof(ThemeManager).GetField("_applicationInitialized", BindingFlags.NonPublic | BindingFlags.Instance);
 
     /// <summary>Na hora e sem animação (a partida do app, a foto das telas).</summary>
     public static void Apply(bool dark)
     {
-      ThemeManager.Current.ApplicationTheme = dark ? ApplicationTheme.Dark : ApplicationTheme.Light;
+      var first = _layer is null;
+      SetHandyControlTheme(dark, swapDictionaries: first || HandyInitialized is null);
+
+      var targets = Targets(dark);
+      if (first)
+        Install(targets);
+      else
+      {
+        foreach (var (key, target) in targets)
+        {
+          if (_live.TryGetValue(key, out var live))
+            live.Repaint(target);
+        }
+      }
+
+      Changed?.Invoke(null, EventArgs.Empty);
+    }
+
+    /// <summary>A camada de pincéis do tema que está valendo (pra teste e diagnóstico).</summary>
+    public static ResourceDictionary? Layer => _layer;
+
+    /// <summary>
+    /// O ThemeManager no tema novo. Na partida o HandyControl troca o dicionário dele (as cores soltas ficam certas); nas
+    /// trocas seguintes, o campo desligado por um instante: o ThemeManager muda e avisa, mas o dicionário fica.
+    /// </summary>
+    private static void SetHandyControlTheme(bool dark, bool swapDictionaries)
+    {
+      var manager = ThemeManager.Current;
+      var theme = dark ? ApplicationTheme.Dark : ApplicationTheme.Light;
+      if (swapDictionaries || HandyInitialized!.GetValue(manager) is not true)
+      {
+        manager.ApplicationTheme = theme;
+        return;
+      }
+
+      HandyInitialized.SetValue(manager, false);
+      try
+      {
+        manager.ApplicationTheme = theme;
+      }
+      finally
+      {
+        HandyInitialized.SetValue(manager, true);
+      }
+    }
+
+    /// <summary>A camada, uma vez: um pincel vivo por chave, no fim dos mesclados (o último mesclado ganha).</summary>
+    private static void Install(Dictionary<object, Brush> targets)
+    {
       var layer = new ResourceDictionary();
+      foreach (var (key, target) in targets)
+      {
+        if (LiveBrush.Create(target) is { } live)
+        {
+          _live[key] = live;
+          layer[key] = live.Brush;
+        }
+      }
+      Application.Current.Resources.MergedDictionaries.Add(layer);
+      _layer = layer;
+    }
+
+    /// <summary>
+    /// Os pincéis do tema: os do dicionário do HandyControl daquele tema e, por cima, os da Uzor. A chave que o app põe na
+    /// raiz dos recursos fica de fora (a raiz ganha dos mesclados: o destaque do HandyControl, PrimaryBrush e cia, mora
+    /// lá).
+    /// </summary>
+    private static Dictionary<object, Brush> Targets(bool dark)
+    {
+      var targets = new Dictionary<object, Brush>();
+      var root = Application.Current.Resources;
+      // Só as chaves da própria raiz: o Contains do ResourceDictionary procura nos mesclados também
+      var rootKeys = root.Keys.Cast<object>().ToHashSet();
+      if (root.MergedDictionaries.OfType<ThemeResources>().FirstOrDefault() is { } handy)
+      {
+        foreach (var (key, value) in Entries(handy.GetThemeDictionary(dark ? "Dark" : "Light")))
+        {
+          if (value is SolidColorBrush or LinearGradientBrush && !rootKeys.Contains(key))
+            targets[key] = (Brush)value;
+        }
+      }
+
       void SetBrush(string key, Color color, double opacity = 1)
       {
         var brush = new SolidColorBrush(color) { Opacity = opacity };
         brush.Freeze();
-        layer[key] = brush;
+        targets[key] = brush;
       }
 
       // No escuro clareia (branco), no claro escurece (preto); a barra de rolagem é cinza nos dois, do lado oposto
@@ -97,22 +190,134 @@ namespace Uzor.Wpf.Services
       SetBrush("Orange.TextBrush", dark ? Color.FromRgb(0xFF, 0x8A, 0x5C) : Color.FromRgb(0xC2, 0x4A, 0x10));
       SetBrush("Purple.TextBrush", dark ? Color.FromRgb(0xC7, 0x7D, 0xDB) : Color.FromRgb(0x7B, 0x2A, 0x92));
 
-      // Uma troca só na coleção = uma passada pela árvore
-      var merged = Application.Current.Resources.MergedDictionaries;
-      var at = _layer is null ? -1 : merged.IndexOf(_layer);
-      if (at >= 0 && at == merged.Count - 1)
-        merged[at] = layer;
-      else
-      {
-        if (at >= 0)
-          merged.RemoveAt(at);
-        merged.Add(layer);
-      }
-      _layer = layer;
-      Changed?.Invoke(null, EventArgs.Empty);
+      return targets;
     }
 
-    /// <summary>A camada de pincéis do tema que está valendo (pra teste e diagnóstico).</summary>
-    public static ResourceDictionary? Layer => _layer;
+    // As entradas de um dicionário com as dos mesclados dele; a de cima ganha (o último mesclado, e o próprio por fim)
+    private static IEnumerable<(object Key, object Value)> Entries(ResourceDictionary dictionary)
+    {
+      var entries = new Dictionary<object, object>();
+      void Collect(ResourceDictionary d)
+      {
+        foreach (var merged in d.MergedDictionaries)
+          Collect(merged);
+        foreach (var key in d.Keys)
+          entries[key] = d[key];
+      }
+      Collect(dictionary);
+      return entries.Select(e => (e.Key, e.Value));
+    }
+
+    /// <summary>
+    /// Um pincel do tema que é sempre o mesmo objeto: a cor (e a opacidade) vem por binding de uma <see cref="Paint"/>,
+    /// e trocar o tema é trocar a tinta. Sólido ou em degradê (o PrimaryBrush do HandyControl é um degradê).
+    /// </summary>
+    private sealed class LiveBrush
+    {
+      private readonly Paint _opacity;
+      private readonly Paint[] _stops;
+
+      private LiveBrush(Brush brush, Paint opacity, Paint[] stops)
+      {
+        Brush = brush;
+        _opacity = opacity;
+        _stops = stops;
+      }
+
+      public Brush Brush { get; }
+
+      public static LiveBrush? Create(Brush model)
+      {
+        switch (model)
+        {
+          case SolidColorBrush solid:
+          {
+            var paint = new Paint(solid.Color, solid.Opacity);
+            var brush = new SolidColorBrush();
+            Bind(brush, SolidColorBrush.ColorProperty, paint, nameof(Paint.Color));
+            Bind(brush, Brush.OpacityProperty, paint, nameof(Paint.Opacity));
+            return new LiveBrush(brush, paint, [paint]);
+          }
+          case LinearGradientBrush gradient:
+          {
+            var opacity = new Paint(default, gradient.Opacity);
+            var brush = new LinearGradientBrush
+            {
+              StartPoint = gradient.StartPoint,
+              EndPoint = gradient.EndPoint,
+              MappingMode = gradient.MappingMode,
+              SpreadMethod = gradient.SpreadMethod,
+              ColorInterpolationMode = gradient.ColorInterpolationMode,
+            };
+            Bind(brush, Brush.OpacityProperty, opacity, nameof(Paint.Opacity));
+            var stops = new Paint[gradient.GradientStops.Count];
+            for (var i = 0; i < stops.Length; i++)
+            {
+              var source = gradient.GradientStops[i];
+              stops[i] = new Paint(source.Color, 1);
+              var stop = new GradientStop { Offset = source.Offset };
+              Bind(stop, GradientStop.ColorProperty, stops[i], nameof(Paint.Color));
+              brush.GradientStops.Add(stop);
+            }
+            return new LiveBrush(brush, opacity, stops);
+          }
+          default:
+            return null;
+        }
+      }
+
+      /// <summary>As cores do pincel do outro tema; forma diferente (outro número de paradas do degradê) fica como está.</summary>
+      public void Repaint(Brush target)
+      {
+        switch (target)
+        {
+          case SolidColorBrush solid when Brush is SolidColorBrush:
+            _opacity.Color = solid.Color;
+            _opacity.Opacity = solid.Opacity;
+            break;
+          case LinearGradientBrush gradient when Brush is LinearGradientBrush && gradient.GradientStops.Count == _stops.Length:
+            _opacity.Opacity = gradient.Opacity;
+            for (var i = 0; i < _stops.Length; i++)
+              _stops[i].Color = gradient.GradientStops[i].Color;
+            break;
+        }
+      }
+
+      private static void Bind(DependencyObject target, DependencyProperty property, Paint source, string path) =>
+        BindingOperations.SetBinding(target, property, new Binding(path) { Source = source, Mode = BindingMode.OneWay });
+    }
+
+    /// <summary>A tinta de um pincel vivo: cor e opacidade que avisam quando mudam.</summary>
+    private sealed class Paint(Color color, double opacity) : INotifyPropertyChanged
+    {
+      private Color _color = color;
+      private double _opacity = opacity;
+
+      public Color Color
+      {
+        get => _color;
+        set
+        {
+          if (_color == value)
+            return;
+          _color = value;
+          PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Color)));
+        }
+      }
+
+      public double Opacity
+      {
+        get => _opacity;
+        set
+        {
+          if (_opacity.Equals(value))
+            return;
+          _opacity = value;
+          PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Opacity)));
+        }
+      }
+
+      public event PropertyChangedEventHandler? PropertyChanged;
+    }
   }
 }
