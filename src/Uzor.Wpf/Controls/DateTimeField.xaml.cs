@@ -11,7 +11,8 @@ namespace Uzor.Wpf.Controls
   /// <summary>
   /// Data e hora (o prazo de resposta): a caixa fechada igual à do <see cref="SelectField"/> e, aberta, o calendário em
   /// português com o horário em 24 h embaixo (no <see cref="TimeEditor"/> ou num atalho). No lugar do DateTimePicker do
-  /// HandyControl, que vinha em inglês, com relógio de ponteiro e AM/PM.
+  /// HandyControl, que vinha em inglês, com relógio de ponteiro e AM/PM. Com <see cref="ShowTime"/> desligado é o campo
+  /// só de data, no lugar do DatePicker do HandyControl (em inglês e com o cartão vazando o fundo).
   /// </summary>
   public partial class DateTimeField : UserControl
   {
@@ -23,6 +24,17 @@ namespace Uzor.Wpf.Controls
 
     public static readonly DependencyProperty PlaceholderProperty = DependencyProperty.Register(
       nameof(Placeholder), typeof(string), typeof(DateTimeField), new PropertyMetadata(Texts.PickDate, OnLookChanged));
+
+    /// <summary>
+    /// False: só a data (a entrega das peças, 23/11/2026, no Handoff). Some o horário do cartão, a caixa mostra só o
+    /// dia e escolher o dia já fecha. A data vai com a hora zerada.
+    /// </summary>
+    public static readonly DependencyProperty ShowTimeProperty = DependencyProperty.Register(
+      nameof(ShowTime), typeof(bool), typeof(DateTimeField), new PropertyMetadata(true, OnLookChanged));
+
+    /// <summary>True: a data pode ficar vazia, e o cartão ganha o Limpar enquanto tem uma escolhida.</summary>
+    public static readonly DependencyProperty AllowClearProperty = DependencyProperty.Register(
+      nameof(AllowClear), typeof(bool), typeof(DateTimeField), new PropertyMetadata(false, OnLookChanged));
 
     private static readonly CultureInfo PtBr = CultureInfo.GetCultureInfo("pt-BR");
 
@@ -63,6 +75,18 @@ namespace Uzor.Wpf.Controls
       set => SetValue(SelectedDateTimeProperty, value);
     }
 
+    public bool ShowTime
+    {
+      get => (bool)GetValue(ShowTimeProperty);
+      set => SetValue(ShowTimeProperty, value);
+    }
+
+    public bool AllowClear
+    {
+      get => (bool)GetValue(AllowClearProperty);
+      set => SetValue(AllowClearProperty, value);
+    }
+
     /// <summary>O que aparece na caixa enquanto nada está escolhido.</summary>
     public string Placeholder
     {
@@ -75,7 +99,9 @@ namespace Uzor.Wpf.Controls
     private void Show()
     {
       var value = SelectedDateTime;
-      Label.Text = value is { } v ? v.ToString("dd/MM/yyyy  HH:mm", PtBr) : Placeholder;
+      Label.Text = value is { } v ? v.ToString(ShowTime ? "dd/MM/yyyy  HH:mm" : "dd/MM/yyyy", PtBr) : Placeholder;
+      TimePart.Visibility = ShowTime ? Visibility.Visible : Visibility.Collapsed;
+      ClearButton.Visibility = AllowClear && value is not null ? Visibility.Visible : Visibility.Collapsed;
       Label.SetResourceReference(TextBlock.ForegroundProperty, value is null ? "SecondaryTextBrush" : "PrimaryTextBrush");
 
       _syncing = true;
@@ -88,7 +114,19 @@ namespace Uzor.Wpf.Controls
       _syncing = false;
     }
 
-    private void Apply(DateTime date, TimeSpan time) => SelectedDateTime = date.Date + time;
+    // Só a data: a hora fica zerada e escolher o dia já fecha o cartão
+    private void Apply(DateTime date, TimeSpan time)
+    {
+      SelectedDateTime = date.Date + (ShowTime ? time : TimeSpan.Zero);
+      if (!ShowTime)
+        Toggle.IsChecked = false;
+    }
+
+    private void Clear_Click(object sender, RoutedEventArgs e)
+    {
+      SelectedDateTime = null;
+      Toggle.IsChecked = false;
+    }
 
     private void Picker_SelectedDatesChanged(object? sender, SelectionChangedEventArgs e)
     {

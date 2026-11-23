@@ -150,7 +150,8 @@
               Margin="0,8,0,10"
               Background="{DynamicResource Divider.Brush}" />
 
-            <!--  Horário: hora e minuto separados (digita, setas, rodinha) ou num atalho  -->
+            <!--  Horário: hora e minuto separados (digita, setas, rodinha) ou num atalho; some no campo só de data  -->
+            <StackPanel x:Name="TimePart">
             <DockPanel Margin="0,0,0,8">
               <controls:TimeEditor
                 x:Name="TimeBox"
@@ -174,18 +175,28 @@
               </StackPanel>
             </DockPanel>
             <WrapPanel x:Name="Chips" />
+            </StackPanel>
 
-            <DockPanel Margin="0,12,0,0">
+            <DockPanel x:Name="Footer" Margin="0,12,0,0">
               <Button
                 Click="Done_Click"
                 Content="{x:Static uzor:Texts.Done}"
                 DockPanel.Dock="Right"
                 Style="{StaticResource Action.Primary.Small}" />
-              <Button
-                HorizontalAlignment="Left"
-                Click="Today_Click"
-                Content="{x:Static uzor:Texts.Today}"
-                Style="{StaticResource Action.Small}" />
+              <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
+                <Button
+                  Click="Today_Click"
+                  Content="{x:Static uzor:Texts.Today}"
+                  Style="{StaticResource Action.Small}" />
+                <!--  Data que pode ficar vazia (AllowClear): tira a escolhida  -->
+                <Button
+                  x:Name="ClearButton"
+                  Margin="6,0,0,0"
+                  Click="Clear_Click"
+                  Content="{x:Static uzor:Texts.Clear}"
+                  Style="{StaticResource Action.Small}"
+                  Visibility="Collapsed" />
+              </StackPanel>
             </DockPanel>
           </StackPanel>
         </Border>
