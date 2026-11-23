@@ -321,6 +321,8 @@
     TargetType="DataGrid">
     <!--  Botão direito: copiar a tabela / exportar CSV  -->
     <Setter Property="behaviors:DataGridExport.IsEnabled" Value="True" />
+    <!--  Botão direito escolhe a linha antes do menu abrir: o menu age na linha clicada, não na de antes  -->
+    <Setter Property="behaviors:SelectRowOnRightClick.IsEnabled" Value="True" />
     <!--  Mais linhas embaixo: as últimas somem num degradê, sem linha cortada ao meio  -->
     <Setter Property="behaviors:ScrollFade.IsEnabled" Value="True" />
 
