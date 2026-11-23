@@ -495,9 +495,12 @@
               Text="{TemplateBinding hc:InfoElement.Placeholder}"
               TextWrapping="Wrap"
               Visibility="Collapsed" />
+            <!--
+              Sem margem aqui: o TextBox já põe o Padding no texto. Com a margem ele entrava duas vezes e o cursor ficava
+              12 à direita e 10 abaixo do texto de exemplo (23/11/2026, a resposta das dúvidas no Handoff)
+            -->
             <ScrollViewer
               x:Name="PART_ContentHost"
-              Margin="{TemplateBinding Padding}"
               Focusable="False"
               HorizontalScrollBarVisibility="Hidden"
               VerticalScrollBarVisibility="{TemplateBinding VerticalScrollBarVisibility}" />
