@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
+using MahApps.Metro.IconPacks;
 using Microsoft.Win32;
 using Uzor.Wpf.Services;
 
@@ -31,25 +32,70 @@ namespace Uzor.Wpf.Behaviors
 
     public static void SetIsEnabled(DependencyObject element, bool value) => element.SetValue(IsEnabledProperty, value);
 
+    // Já pôs os itens nesta grade (o Loaded volta a cada vez que a grade entra de novo na tela)
+    private static readonly DependencyProperty AttachedProperty = DependencyProperty.RegisterAttached(
+      "Attached", typeof(bool), typeof(DataGridExport), new PropertyMetadata(false));
+
     private static void OnIsEnabledChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
       if (d is not DataGrid grid || e.NewValue is not true)
         return;
 
-      var copy = new MenuItem { Header = Texts.CopyTable };
+      // Monta quando a grade carrega, não aqui: o estilo liga isto antes do XAML pôr o menu da própria grade
+      // (<DataGrid.ContextMenu>), e o menu de lá trocava o nosso - a grade com menu de linha perdia o copiar/exportar
+      if (grid.IsLoaded)
+        Attach(grid);
+      else
+        grid.Loaded += OnLoaded;
+    }
+
+    private static void OnLoaded(object sender, RoutedEventArgs e)
+    {
+      var grid = (DataGrid)sender;
+      grid.Loaded -= OnLoaded;
+      Attach(grid);
+    }
+
+    private static void Attach(DataGrid grid)
+    {
+      if ((bool)grid.GetValue(AttachedProperty))
+        return;
+      grid.SetValue(AttachedProperty, true);
+
+      var copy = new MenuItem { Header = Texts.CopyTable, Icon = new PackIconPhosphorIcons { Kind = PackIconPhosphorIconsKind.CopyBold } };
       copy.Click += (_, _) => Copy(grid);
-      var export = new MenuItem { Header = Texts.ExportCsv };
+      var export = new MenuItem { Header = Texts.ExportCsv, Icon = new PackIconPhosphorIcons { Kind = PackIconPhosphorIconsKind.FileCsvBold } };
       export.Click += (_, _) => Export(grid);
 
-      // O filtro do cabeçalho (DataGridFilterBehavior) já pode ter criado o menu com o "Limpar todos os filtros":
-      // os nossos entram em cima dele. Antes a grade com filtro ficava só com o dele
+      // A tabela inteira vai no fim, depois do que é da linha (o menu da grade) e do "Limpar todos os filtros" do
+      // filtro do cabeçalho (DataGridFilterBehavior), separada deles
       var menu = grid.ContextMenu ?? new ContextMenu();
-      var ours = new Control[] { copy, export };
       if (menu.Items.Count > 0)
-        ours = [.. ours, new Separator()];
-      foreach (var (index, item) in ours.Index())
-        menu.Items.Insert(index, item);
+        menu.Items.Add(new Separator());
+      menu.Items.Add(copy);
+      menu.Items.Add(export);
+      menu.Opened += (_, _) => TidySeparators(menu);
       grid.ContextMenu = menu;
+    }
+
+    /// <summary>
+    /// Separador sem item visível de um dos lados some (o da linha que esconde as ações dela, a tela só de leitura): o
+    /// menu não abre com uma linha solta em cima nem com duas seguidas. Conferido a cada vez que abre.
+    /// </summary>
+    public static void TidySeparators(ItemsControl menu)
+    {
+      ArgumentNullException.ThrowIfNull(menu);
+      var items = menu.Items.OfType<FrameworkElement>().ToList();
+      bool Shown(FrameworkElement item) => item is not Separator && item.Visibility == Visibility.Visible;
+      for (var i = 0; i < items.Count; i++)
+      {
+        if (items[i] is not Separator separator)
+          continue;
+        var before = items.Take(i).LastOrDefault(e => Shown(e) || e is Separator { Visibility: Visibility.Visible });
+        var after = items.Skip(i + 1).Any(Shown);
+        // SetCurrentValue: o separador que tem Visibility ligada no XAML continua ligado
+        separator.SetCurrentValue(UIElement.VisibilityProperty, before is not null && before is not Separator && after ? Visibility.Visible : Visibility.Collapsed);
+      }
     }
 
     private static void Copy(DataGrid grid)
