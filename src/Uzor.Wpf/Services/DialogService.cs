@@ -58,9 +58,11 @@ namespace Uzor.Wpf.Services
       ArgumentNullException.ThrowIfNull(content);
       var result = new TaskCompletionSource<bool>();
       Dialog? dialog = null;
+      var restore = FitHost(content, token);
       content.Closed += (_, ok) =>
       {
         dialog?.Close();
+        restore?.Invoke();
         result.TrySetResult(ok);
       };
       dialog = Dialog.Show(content, token);
@@ -71,10 +73,12 @@ namespace Uzor.Wpf.Services
     {
       var result = new TaskCompletionSource<bool>();
       Dialog? dialog = null;
+      var restore = FitHost(content, token);
 
       void Finish(bool value)
       {
         dialog?.Close();
+        restore?.Invoke();
         result.TrySetResult(value);
       }
 
@@ -82,6 +86,65 @@ namespace Uzor.Wpf.Services
       content.SecondaryClicked += (_, _) => Finish(false);
       dialog = Dialog.Show(content, token);
       return result.Task;
+    }
+
+    // O que o diálogo precisa em volta dele dentro da janela: a sombra do cartão e um respiro
+    private const double DialogRoom = 48;
+
+    /// <summary>
+    /// Janela menor que o diálogo cortava ele (a de login do Handoff tem 400 de largura e a altura do formulário; as
+    /// Configurações têm 540 e mais altura que isso, o aviso 420): enquanto ele está aberto, a janela cresce pelos lados e pra cima e
+    /// pra baixo, e volta ao tamanho dela no fim. Devolve o que desfaz, ou nulo quando o diálogo já cabia.
+    /// </summary>
+    private static Action? FitHost(object content, string token)
+    {
+      if (content is not FrameworkElement { Width: var width } element || double.IsNaN(width) || width <= 0)
+        return null;
+      var window = Application.Current?.Windows.OfType<System.Windows.Window>()
+        .FirstOrDefault(w => w.IsVisible && w.WindowState == WindowState.Normal && HandyControl.Controls.Dialog.GetToken(w) == token);
+      if (window is null)
+        return null;
+
+      element.Measure(new System.Windows.Size(width, double.PositiveInfinity));
+      var chrome = window.Content is FrameworkElement { ActualHeight: > 0 } inner ? window.ActualHeight - inner.ActualHeight : 0;
+      var area = SystemParameters.WorkArea;
+      var neededWidth = width + DialogRoom;
+      var neededHeight = Math.Min(element.DesiredSize.Height + DialogRoom + chrome, area.Height);
+      var (oldWidth, oldHeight, oldSizing) = (window.Width, window.Height, window.SizeToContent);
+      var (oldActualWidth, oldActualHeight) = (window.ActualWidth, window.ActualHeight);
+      var wider = oldActualWidth < neededWidth;
+      var taller = oldActualHeight < neededHeight;
+      if (!wider && !taller)
+        return null;
+
+      // Só segura dentro da tela principal quem já estava nela: em outro monitor (ou fora da tela, nas fotos) só cresce
+      var inside = window.Left >= area.Left && window.Left + oldActualWidth <= area.Right && window.Top >= area.Top && window.Top + oldActualHeight <= area.Bottom;
+      window.SizeToContent = SizeToContent.Manual;
+      if (wider)
+      {
+        var left = window.Left - (neededWidth - oldActualWidth) / 2;
+        window.Width = neededWidth;
+        window.Left = inside ? Math.Max(area.Left, Math.Min(left, area.Right - neededWidth)) : left;
+      }
+
+      if (taller)
+      {
+        var top = window.Top - (neededHeight - oldActualHeight) / 2;
+        window.Height = neededHeight;
+        window.Top = inside ? Math.Max(area.Top, Math.Min(top, area.Bottom - neededHeight)) : top;
+      }
+
+      return () =>
+      {
+        // Volta pelo centro de onde ela estiver agora (pode ter sido arrastada com o diálogo aberto)
+        var centerX = window.Left + window.ActualWidth / 2;
+        var centerY = window.Top + window.ActualHeight / 2;
+        window.Width = oldWidth;
+        window.Height = oldHeight;
+        window.SizeToContent = oldSizing;
+        window.Left = centerX - oldActualWidth / 2;
+        window.Top = centerY - oldActualHeight / 2;
+      };
     }
 
     /// <summary>
