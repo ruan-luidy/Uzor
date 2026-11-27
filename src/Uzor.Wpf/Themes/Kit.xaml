@@ -762,6 +762,47 @@
     </Setter>
   </Style>
 
+  <!--
+    A setinha da ponta da faixa de abas que não cabe (27/11/2026, "mais visível que dá pra ir ali pro lado"): a pílula das
+    abas, com a seta e quantas abas tem pra aquele lado. Clicar anda uma página; segurar continua andando.
+  -->
+  <Style x:Key="Uzor.DocTabs.Edge" TargetType="RepeatButton">
+    <Setter Property="Height" Value="30" />
+    <Setter Property="MinWidth" Value="40" />
+    <Setter Property="Padding" Value="9,0" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+    <Setter Property="Background" Value="{DynamicResource SecondaryRegionBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Divider.Brush}" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="Delay" Value="400" />
+    <Setter Property="Interval" Value="320" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="RepeatButton">
+          <Border
+            x:Name="Box"
+            Padding="{TemplateBinding Padding}"
+            Background="{TemplateBinding Background}"
+            BorderBrush="{TemplateBinding BorderBrush}"
+            BorderThickness="1"
+            CornerRadius="{StaticResource Radius.Md}">
+            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="Box" Property="Background" Value="{DynamicResource Hover.RowBrush}" />
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+              <Setter TargetName="Box" Property="Background" Value="{DynamicResource Nav.SelectedBrush}" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
   <Style x:Key="Uzor.DocTabs" TargetType="TabControl">
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="BorderThickness" Value="0" />
@@ -771,23 +812,76 @@
       <Setter.Value>
         <ControlTemplate TargetType="TabControl">
           <DockPanel KeyboardNavigation.TabNavigation="Local">
-            <!--  A faixa das abas, com a divisória fina embaixo; rola de lado com a roda quando não cabe  -->
+            <!--
+              A faixa das abas, com a divisória fina embaixo; rola de lado com a roda quando não cabe. Sem caber, a ponta
+              que continua some num degradê e a setinha diz quantas abas tem pra lá (DocTabs.Overflow, 27/11/2026)
+            -->
             <Border
               Padding="12,8"
               BorderBrush="{DynamicResource Divider.Brush}"
               BorderThickness="0,0,0,1"
               DockPanel.Dock="Top">
-              <ScrollViewer
-                controls:DocTabs.WheelScrolls="True"
-                Focusable="False"
-                HorizontalScrollBarVisibility="Hidden"
-                VerticalScrollBarVisibility="Disabled">
-                <StackPanel
-                  x:Name="HeaderPanel"
-                  IsItemsHost="True"
-                  KeyboardNavigation.TabIndex="1"
-                  Orientation="Horizontal" />
-              </ScrollViewer>
+              <Grid>
+                <ScrollViewer
+                  x:Name="PART_TabScroll"
+                  controls:DocTabs.Overflow="True"
+                  controls:DocTabs.WheelScrolls="True"
+                  Focusable="False"
+                  HorizontalScrollBarVisibility="Hidden"
+                  VerticalScrollBarVisibility="Disabled">
+                  <StackPanel
+                    x:Name="HeaderPanel"
+                    IsItemsHost="True"
+                    KeyboardNavigation.TabIndex="1"
+                    Orientation="Horizontal" />
+                </ScrollViewer>
+                <RepeatButton
+                  HorizontalAlignment="Left"
+                  Command="{x:Static controls:DocTabs.PageBack}"
+                  CommandTarget="{Binding ElementName=PART_TabScroll}"
+                  Style="{StaticResource Uzor.DocTabs.Edge}"
+                  ToolTip="Abas anteriores (a roda do mouse também anda)"
+                  Visibility="{Binding Path=(controls:DocTabs.BeforeVisibility), ElementName=PART_TabScroll}">
+                  <StackPanel Orientation="Horizontal">
+                    <Path
+                      Width="10"
+                      Height="10"
+                      VerticalAlignment="Center"
+                      Data="{icons:Phosphor CaretLeftBold}"
+                      Fill="{DynamicResource PrimaryTextBrush}"
+                      Stretch="Uniform" />
+                    <TextBlock
+                      Margin="5,0,0,0"
+                      VerticalAlignment="Center"
+                      FontSize="{StaticResource FontSize.Body}"
+                      FontWeight="SemiBold"
+                      Text="{Binding Path=(controls:DocTabs.HiddenBefore), ElementName=PART_TabScroll}" />
+                  </StackPanel>
+                </RepeatButton>
+                <RepeatButton
+                  HorizontalAlignment="Right"
+                  Command="{x:Static controls:DocTabs.PageForward}"
+                  CommandTarget="{Binding ElementName=PART_TabScroll}"
+                  Style="{StaticResource Uzor.DocTabs.Edge}"
+                  ToolTip="Próximas abas (a roda do mouse também anda)"
+                  Visibility="{Binding Path=(controls:DocTabs.AfterVisibility), ElementName=PART_TabScroll}">
+                  <StackPanel Orientation="Horizontal">
+                    <TextBlock
+                      Margin="0,0,5,0"
+                      VerticalAlignment="Center"
+                      FontSize="{StaticResource FontSize.Body}"
+                      FontWeight="SemiBold"
+                      Text="{Binding Path=(controls:DocTabs.HiddenAfter), ElementName=PART_TabScroll}" />
+                    <Path
+                      Width="10"
+                      Height="10"
+                      VerticalAlignment="Center"
+                      Data="{icons:Phosphor CaretRightBold}"
+                      Fill="{DynamicResource PrimaryTextBrush}"
+                      Stretch="Uniform" />
+                  </StackPanel>
+                </RepeatButton>
+              </Grid>
             </Border>
             <ContentPresenter
               x:Name="PART_SelectedContentHost"
