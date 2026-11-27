@@ -950,9 +950,22 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="ListBox">
-          <ScrollViewer Focusable="False" HorizontalScrollBarVisibility="Disabled">
-            <ItemsPresenter />
+          <ScrollViewer
+            x:Name="Scroll"
+            Focusable="False"
+            HorizontalScrollBarVisibility="Disabled">
+            <ItemsPresenter x:Name="Items" />
           </ScrollViewer>
+          <ControlTemplate.Triggers>
+            <!--
+              A barra de rolagem do HandyControl flutua POR CIMA do conteúdo (8 de largura, colada na direita): com a
+              lista rolando, ela ficava em cima do fim das linhas, do selo e do botão de excluir (27/11/2026, "scroll em
+              cima dos componentes"). Quando rola, as linhas deixam o espaço dela; quando não rola, vão até a borda.
+            -->
+            <Trigger SourceName="Scroll" Property="ComputedVerticalScrollBarVisibility" Value="Visible">
+              <Setter TargetName="Items" Property="Margin" Value="0,0,10,0" />
+            </Trigger>
+          </ControlTemplate.Triggers>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
