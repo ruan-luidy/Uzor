@@ -27,7 +27,12 @@ namespace Uzor.Wpf.Behaviors
       EventManager.RegisterClassHandler(typeof(DataGrid), FrameworkElement.LoadedEvent, new RoutedEventHandler((s, _) => Apply((DataGrid)s)));
     }
 
-    /// <summary>Tira as linhas de baixo da barra vertical. Devolve se mexeu (template sem as partes, ou já certo: não mexe).</summary>
+    /// <summary>
+    /// Tira as linhas de baixo das barras: da vertical e, desde 27/11/2026, da horizontal ("o palito vertical já joguei
+    /// pro lado e o horizontal ainda não": na grade que rola pro lado, a barra de baixo ficava em cima da última linha).
+    /// A linha da barra de baixo também é Auto e some sem rolagem pro lado, então a grade estreita não perde altura.
+    /// Devolve se mexeu (template sem as partes, ou já certo: não mexe).
+    /// </summary>
     public static bool Apply(DataGrid grid)
     {
       grid.ApplyTemplate();
@@ -36,21 +41,42 @@ namespace Uzor.Wpf.Behaviors
         return false;
       viewer.ApplyTemplate();
       if (viewer.Template?.FindName("PART_ScrollContentPresenter", viewer) is not ScrollContentPresenter rows
-        || viewer.Template.FindName("PART_VerticalScrollBar", viewer) is not ScrollBar bar
-        || VisualTreeHelper.GetParent(rows) is not Grid host
-        || !ReferenceEquals(VisualTreeHelper.GetParent(bar), host))
+        || VisualTreeHelper.GetParent(rows) is not Grid host)
         return false;
 
-      var first = Grid.GetColumn(rows);
-      var barColumn = Grid.GetColumn(bar);
-      var sameRow = Grid.GetRow(rows) < Grid.GetRow(bar) + Grid.GetRowSpan(bar)
-        && Grid.GetRow(bar) < Grid.GetRow(rows) + Grid.GetRowSpan(rows);
-      if (!sameRow || barColumn <= first || first + Grid.GetColumnSpan(rows) <= barColumn)
-        return false;
+      var changed = false;
+      if (viewer.Template.FindName("PART_VerticalScrollBar", viewer) is ScrollBar vertical
+        && ReferenceEquals(VisualTreeHelper.GetParent(vertical), host))
+      {
+        var first = Grid.GetColumn(rows);
+        var barColumn = Grid.GetColumn(vertical);
+        if (Overlap(Grid.GetRow(rows), Grid.GetRowSpan(rows), Grid.GetRow(vertical), Grid.GetRowSpan(vertical))
+          && first < barColumn && barColumn < first + Grid.GetColumnSpan(rows))
+        {
+          Grid.SetColumnSpan(rows, barColumn - first);
+          changed = true;
+        }
+      }
 
-      Grid.SetColumnSpan(rows, barColumn - first);
-      return true;
+      // No template do HandyControl a barra de baixo mora na MESMA linha das linhas, colada embaixo (por cima da última).
+      // Ela desce pra uma linha Auto logo abaixo, que a grade ganha aqui; a vertical fica onde está e para em cima dela.
+      if (viewer.Template.FindName("PART_HorizontalScrollBar", viewer) is ScrollBar horizontal
+        && ReferenceEquals(VisualTreeHelper.GetParent(horizontal), host)
+        && host.RowDefinitions.Count > 0
+        && Overlap(Grid.GetRow(rows), Grid.GetRowSpan(rows), Grid.GetRow(horizontal), Grid.GetRowSpan(horizontal))
+        && Overlap(Grid.GetColumn(rows), Grid.GetColumnSpan(rows), Grid.GetColumn(horizontal), Grid.GetColumnSpan(horizontal))
+        && Grid.GetRow(rows) + Grid.GetRowSpan(rows) == host.RowDefinitions.Count)
+      {
+        host.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        Grid.SetRow(horizontal, host.RowDefinitions.Count - 1);
+        Grid.SetRowSpan(horizontal, 1);
+        changed = true;
+      }
+      return changed;
     }
+
+    private static bool Overlap(int start, int span, int otherStart, int otherSpan)
+      => start < otherStart + otherSpan && otherStart < start + span;
 
     private static T? Find<T>(DependencyObject root) where T : DependencyObject
     {
